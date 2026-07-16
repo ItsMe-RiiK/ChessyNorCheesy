@@ -2,13 +2,10 @@
 
 #include <cstdio>
 #include <cstring>
-#include <sstream>
 
-GameState::GameState()
-    : board_changed_(false), playing_white_(true), white_to_move_(true),
-      halfmove_clock_(0), fullmove_number_(1),
-      white_castle_king_(true), white_castle_queen_(true),
-      black_castle_king_(true), black_castle_queen_(true)
+GameState::GameState() :
+    board_changed_(false), playing_white_(true), white_to_move_(true), halfmove_clock_(0), fullmove_number_(1), white_castle_king_(true),
+    white_castle_queen_(true), black_castle_king_(true), black_castle_queen_(true)
 {
   setup_initial_board();
   prev_board_ = board_;
@@ -87,11 +84,8 @@ bool GameState::update(const Board &detected_board)
       bool was_empty = (board_[r][f] == Piece::EMPTY);
       bool now_empty = (detected_board[r][f] == Piece::EMPTY);
 
-      bool was_white = (!was_empty &&
-                        board_[r][f] >= Piece::WHITE_PAWN &&
-                        board_[r][f] <= Piece::WHITE_KING);
-      bool now_white = (detected_board[r][f] >= Piece::WHITE_PAWN &&
-                        detected_board[r][f] <= Piece::WHITE_KING);
+      bool was_white = (!was_empty && board_[r][f] >= Piece::WHITE_PAWN && board_[r][f] <= Piece::WHITE_KING);
+      bool now_white = (detected_board[r][f] >= Piece::WHITE_PAWN && detected_board[r][f] <= Piece::WHITE_KING);
 
       if (was_empty != now_empty || (!was_empty && !now_empty && was_white != now_white))
       {
@@ -114,9 +108,8 @@ bool GameState::update(const Board &detected_board)
       apply_move(last_move_);
       move_history_.push_back(last_move_);
 
-      printf("[ChessBot][GameState] Move detected: %s (FEN: %s)\n",
-             last_move_.c_str(), to_fen().c_str());
-             
+      printf("[ChessBot][GameState] Move detected: %s (FEN: %s)\n", last_move_.c_str(), to_fen().c_str());
+
       board_changed_ = true;
     }
     else
@@ -139,9 +132,9 @@ bool GameState::update(const Board &detected_board)
 std::string GameState::detect_move(const Board &old_board, const Board &new_board)
 {
   // Find squares that changed
-  std::vector<std::pair<int, int>> emptied;  // squares that became empty
-  std::vector<std::pair<int, int>> filled;   // squares that became occupied or changed piece
-  std::vector<std::pair<int, int>> changed;  // squares where piece color changed
+  std::vector<std::pair<int, int>> emptied; // squares that became empty
+  std::vector<std::pair<int, int>> filled; // squares that became occupied or changed piece
+  std::vector<std::pair<int, int>> changed; // squares where piece color changed
 
   for (int r = 0; r < 8; r++)
   {
@@ -161,10 +154,8 @@ std::string GameState::detect_move(const Board &old_board, const Board &new_boar
       else if (!old_empty && !new_empty)
       {
         // Both occupied — check if piece color changed (capture + new piece)
-        bool old_white = (old_board[r][f] >= Piece::WHITE_PAWN &&
-                          old_board[r][f] <= Piece::WHITE_KING);
-        bool new_white = (new_board[r][f] >= Piece::WHITE_PAWN &&
-                          new_board[r][f] <= Piece::WHITE_KING);
+        bool old_white = (old_board[r][f] >= Piece::WHITE_PAWN && old_board[r][f] <= Piece::WHITE_KING);
+        bool new_white = (new_board[r][f] >= Piece::WHITE_PAWN && new_board[r][f] <= Piece::WHITE_KING);
         if (old_white != new_white)
         {
           changed.push_back({f, r});
@@ -174,26 +165,27 @@ std::string GameState::detect_move(const Board &old_board, const Board &new_boar
   }
 
   // DEBUG PRINT
-  if (!emptied.empty() || !filled.empty() || !changed.empty()) {
-    printf("[ChessBot][GameState] Debug: emptied=%zu, filled=%zu, changed=%zu\n",
-           emptied.size(), filled.size(), changed.size());
-    for (auto& sq : emptied) printf("  Emptied: %s\n", square_to_uci(sq.first, sq.second).c_str());
-    for (auto& sq : filled) printf("  Filled: %s\n", square_to_uci(sq.first, sq.second).c_str());
-    for (auto& sq : changed) printf("  Changed: %s\n", square_to_uci(sq.first, sq.second).c_str());
+  if (!emptied.empty() || !filled.empty() || !changed.empty())
+  {
+    printf("[ChessBot][GameState] Debug: emptied=%zu, filled=%zu, changed=%zu\n", emptied.size(), filled.size(), changed.size());
+    for (auto &sq : emptied)
+      printf("  Emptied: %s\n", square_to_uci(sq.first, sq.second).c_str());
+    for (auto &sq : filled)
+      printf("  Filled: %s\n", square_to_uci(sq.first, sq.second).c_str());
+    for (auto &sq : changed)
+      printf("  Changed: %s\n", square_to_uci(sq.first, sq.second).c_str());
   }
 
   // Simple move: one square emptied, one filled
   if (emptied.size() == 1 && filled.size() == 1 && changed.empty())
   {
-    return square_to_uci(emptied[0].first, emptied[0].second) +
-           square_to_uci(filled[0].first, filled[0].second);
+    return square_to_uci(emptied[0].first, emptied[0].second) + square_to_uci(filled[0].first, filled[0].second);
   }
 
   // Capture: one emptied, one changed
   if (emptied.size() == 1 && filled.empty() && changed.size() == 1)
   {
-    return square_to_uci(emptied[0].first, emptied[0].second) +
-           square_to_uci(changed[0].first, changed[0].second);
+    return square_to_uci(emptied[0].first, emptied[0].second) + square_to_uci(changed[0].first, changed[0].second);
   }
 
   // Castling: two emptied (king + rook), two filled (king + rook new positions)
@@ -212,8 +204,7 @@ std::string GameState::detect_move(const Board &old_board, const Board &new_boar
           // King moves two squares for castling
           if (fl.second == e.second && std::abs(fl.first - e.first) == 2)
           {
-            return square_to_uci(e.first, e.second) +
-                   square_to_uci(fl.first, fl.second);
+            return square_to_uci(e.first, e.second) + square_to_uci(fl.first, fl.second);
           }
         }
         // Regular king move to any filled square
@@ -221,16 +212,14 @@ std::string GameState::detect_move(const Board &old_board, const Board &new_boar
         {
           if (fl.second == e.second || std::abs(fl.second - e.second) <= 1)
           {
-            return square_to_uci(e.first, e.second) +
-                   square_to_uci(fl.first, fl.second);
+            return square_to_uci(e.first, e.second) + square_to_uci(fl.first, fl.second);
           }
         }
       }
     }
 
     // Fallback: first emptied → first filled
-    return square_to_uci(emptied[0].first, emptied[0].second) +
-           square_to_uci(filled[0].first, filled[0].second);
+    return square_to_uci(emptied[0].first, emptied[0].second) + square_to_uci(filled[0].first, filled[0].second);
   }
 
   // En passant: two emptied (pawn + captured pawn), one filled
@@ -244,8 +233,7 @@ std::string GameState::detect_move(const Board &old_board, const Board &new_boar
         Piece p = old_board[e.second][e.first];
         if (p == Piece::WHITE_PAWN || p == Piece::BLACK_PAWN)
         {
-          return square_to_uci(e.first, e.second) +
-                 square_to_uci(filled[0].first, filled[0].second);
+          return square_to_uci(e.first, e.second) + square_to_uci(filled[0].first, filled[0].second);
         }
       }
     }
@@ -256,14 +244,15 @@ std::string GameState::detect_move(const Board &old_board, const Board &new_boar
   {
     if (emptied.size() + filled.size() + changed.size() > 6)
     {
-      printf("[ChessBot][GameState] Vision unstable (too many changed squares: %zu). Ignoring frame.\n", 
-             emptied.size() + filled.size() + changed.size());
+      printf(
+          "[ChessBot][GameState] Vision unstable (too many changed squares: %zu). Ignoring frame.\n",
+          emptied.size() + filled.size() + changed.size()
+      );
       return "";
     }
 
     auto &dest = !filled.empty() ? filled[0] : changed[0];
-    return square_to_uci(emptied[0].first, emptied[0].second) +
-           square_to_uci(dest.first, dest.second);
+    return square_to_uci(emptied[0].first, emptied[0].second) + square_to_uci(dest.first, dest.second);
   }
 
   return ""; // Could not detect move
@@ -283,8 +272,7 @@ void GameState::apply_move(const std::string &uci_move)
   Piece moving = board_[from_rank][from_file];
 
   // Handle castling
-  if ((moving == Piece::WHITE_KING || moving == Piece::BLACK_KING) &&
-      std::abs(to_file - from_file) == 2)
+  if ((moving == Piece::WHITE_KING || moving == Piece::BLACK_KING) && std::abs(to_file - from_file) == 2)
   {
     // Move the rook too
     if (to_file > from_file)
@@ -302,8 +290,7 @@ void GameState::apply_move(const std::string &uci_move)
   }
 
   // Handle en passant capture
-  if ((moving == Piece::WHITE_PAWN || moving == Piece::BLACK_PAWN) &&
-      from_file != to_file && board_[to_rank][to_file] == Piece::EMPTY)
+  if ((moving == Piece::WHITE_PAWN || moving == Piece::BLACK_PAWN) && from_file != to_file && board_[to_rank][to_file] == Piece::EMPTY)
   {
     // Remove the captured pawn
     board_[from_rank][to_file] = Piece::EMPTY;
@@ -338,8 +325,7 @@ void GameState::apply_move(const std::string &uci_move)
 
   // Update en passant
   en_passant_square_.clear();
-  if ((moving == Piece::WHITE_PAWN && from_rank == 1 && to_rank == 3) ||
-      (moving == Piece::BLACK_PAWN && from_rank == 6 && to_rank == 4))
+  if ((moving == Piece::WHITE_PAWN && from_rank == 1 && to_rank == 3) || (moving == Piece::BLACK_PAWN && from_rank == 6 && to_rank == 4))
   {
     int ep_rank = (from_rank + to_rank) / 2;
     en_passant_square_ = square_to_uci(to_file, ep_rank);
@@ -348,8 +334,7 @@ void GameState::apply_move(const std::string &uci_move)
   // Update castling rights
   update_castling(uci_move);
 
-  if (moving == Piece::WHITE_PAWN || moving == Piece::BLACK_PAWN ||
-      board_[to_rank][to_file] != Piece::EMPTY)
+  if (moving == Piece::WHITE_PAWN || moving == Piece::BLACK_PAWN || board_[to_rank][to_file] != Piece::EMPTY)
   {
     halfmove_clock_ = 0;
   }

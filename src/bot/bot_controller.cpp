@@ -10,12 +10,9 @@ static std::mt19937 &get_bot_rng()
   return rng;
 }
 
-BotController::BotController()
-    : board_reader_(capture_, theme_manager_),
-      running_(false), should_stop_(false),
-      stockfish_depth_(20),
-      move_delay_min_ms_(200), move_delay_max_ms_(800),
-      poll_interval_ms_(200)
+BotController::BotController() :
+    board_reader_(capture_, theme_manager_), running_(false), should_stop_(false), stockfish_depth_(20), move_delay_min_ms_(200),
+    move_delay_max_ms_(800), poll_interval_ms_(200)
 {
 }
 
@@ -114,18 +111,23 @@ void BotController::calibrate(int tl_x, int tl_y, int br_x, int br_y)
 {
   board_reader_.calibrate(tl_x, tl_y, br_x, br_y);
   game_state_.reset();
-  
+
   std::string b, p;
-  if (!theme_manager_.load_default_config(b, p)) {
-     auto pieces = theme_manager_.get_available_pieces();
-     for (const auto& candidate : pieces) {
-         if (theme_manager_.load_piece_theme(candidate)) {
-             p = candidate;
-             break;
-         }
-     }
-  } else {
-     theme_manager_.load_piece_theme(p);
+  if (!theme_manager_.load_default_config(b, p))
+  {
+    auto pieces = theme_manager_.get_available_pieces();
+    for (const auto &candidate : pieces)
+    {
+      if (theme_manager_.load_piece_theme(candidate))
+      {
+        p = candidate;
+        break;
+      }
+    }
+  }
+  else
+  {
+    theme_manager_.load_piece_theme(p);
   }
 
   set_status("Board calibrated manually! Ready to start.");
@@ -141,7 +143,7 @@ bool BotController::auto_calibrate()
     set_status(msg);
     return true;
   }
-  
+
   set_status("ERROR: Auto-Detect failed. Ensure board is visible and themes exist.");
   return false;
 }
@@ -225,40 +227,78 @@ void BotController::bot_loop()
     {
       std::string fen = http_server_.pop_fen();
       printf("[ChessBot][HTTP] Received FEN: %s\n", fen.c_str());
-      
+
       // Parse FEN into a Board object
       Board detected_board;
-      for (auto &row : detected_board) row.fill(Piece::EMPTY);
-      
+      for (auto &row : detected_board)
+        row.fill(Piece::EMPTY);
+
       int r = 7, f = 0;
-      for (char c : fen) {
-        if (c == ' ') break; // Only care about piece placement
-        if (c == '/') { r--; f = 0; }
-        else if (isdigit(c)) { f += (c - '0'); }
-        else {
+      for (char c : fen)
+      {
+        if (c == ' ')
+          break; // Only care about piece placement
+        if (c == '/')
+        {
+          r--;
+          f = 0;
+        }
+        else if (isdigit(c))
+        {
+          f += (c - '0');
+        }
+        else
+        {
           Piece p = Piece::EMPTY;
-          switch (c) {
-            case 'P': p = Piece::WHITE_PAWN; break;
-            case 'N': p = Piece::WHITE_KNIGHT; break;
-            case 'B': p = Piece::WHITE_BISHOP; break;
-            case 'R': p = Piece::WHITE_ROOK; break;
-            case 'Q': p = Piece::WHITE_QUEEN; break;
-            case 'K': p = Piece::WHITE_KING; break;
-            case 'p': p = Piece::BLACK_PAWN; break;
-            case 'n': p = Piece::BLACK_KNIGHT; break;
-            case 'b': p = Piece::BLACK_BISHOP; break;
-            case 'r': p = Piece::BLACK_ROOK; break;
-            case 'q': p = Piece::BLACK_QUEEN; break;
-            case 'k': p = Piece::BLACK_KING; break;
+          switch (c)
+          {
+          case 'P':
+            p = Piece::WHITE_PAWN;
+            break;
+          case 'N':
+            p = Piece::WHITE_KNIGHT;
+            break;
+          case 'B':
+            p = Piece::WHITE_BISHOP;
+            break;
+          case 'R':
+            p = Piece::WHITE_ROOK;
+            break;
+          case 'Q':
+            p = Piece::WHITE_QUEEN;
+            break;
+          case 'K':
+            p = Piece::WHITE_KING;
+            break;
+          case 'p':
+            p = Piece::BLACK_PAWN;
+            break;
+          case 'n':
+            p = Piece::BLACK_KNIGHT;
+            break;
+          case 'b':
+            p = Piece::BLACK_BISHOP;
+            break;
+          case 'r':
+            p = Piece::BLACK_ROOK;
+            break;
+          case 'q':
+            p = Piece::BLACK_QUEEN;
+            break;
+          case 'k':
+            p = Piece::BLACK_KING;
+            break;
           }
-          if (r >= 0 && r < 8 && f >= 0 && f < 8) detected_board[r][f] = p;
+          if (r >= 0 && r < 8 && f >= 0 && f < 8)
+            detected_board[r][f] = p;
           f++;
         }
       }
 
       bool changed = game_state_.update(detected_board);
-      
-      if (changed) {
+
+      if (changed)
+      {
         std::string new_fen = game_state_.to_fen();
         if (on_fen_update)
           on_fen_update(new_fen);
@@ -351,8 +391,7 @@ bool BotController::execute_move(const std::string &uci_move)
   board_reader_.get_square_center(from_file, from_rank, from_x, from_y);
   board_reader_.get_square_center(to_file, to_rank, to_x, to_y);
 
-  printf("[ChessBot] Move %s: click (%d,%d) → (%d,%d)\n",
-         uci_move.c_str(), from_x, from_y, to_x, to_y);
+  printf("[ChessBot] Move %s: click (%d,%d) → (%d,%d)\n", uci_move.c_str(), from_x, from_y, to_x, to_y);
 
   // Drag from source square to destination square
   if (!mouse_.drag(from_x, from_y, to_x, to_y))

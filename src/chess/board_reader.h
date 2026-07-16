@@ -1,12 +1,12 @@
 #ifndef CHESSBOT_BOARD_READER_H
 #define CHESSBOT_BOARD_READER_H
 
-#include "../capture/theme_manager.h"
 #include "../capture/screen_capture.h"
-#include <opencv2/opencv.hpp>
+#include "../capture/theme_manager.h"
+
 #include <array>
-#include <cstdint>
 #include <functional>
+#include <opencv2/opencv.hpp>
 #include <string>
 
 /*
@@ -45,8 +45,7 @@ public:
   ~BoardReader() = default;
 
   // Manual calibration (fallback)
-  void calibrate(int top_left_x, int top_left_y,
-                 int bottom_right_x, int bottom_right_y);
+  void calibrate(int top_left_x, int top_left_y, int bottom_right_x, int bottom_right_y);
 
   // Auto calibration using template matching on screen
   // Returns true and populates detected_board and detected_pieces if successful

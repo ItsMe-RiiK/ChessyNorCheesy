@@ -4,9 +4,16 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/XShm.h>
+
+// X11 defines macros that conflict with standard C++ and OpenCV
+#undef Status
+#undef Success
+#undef None
+#undef Bool
+#undef True
+#undef False
 #include <cstdint>
 #include <sys/shm.h>
-#include <vector>
 
 /*
  * ScreenCapture — Fast X11 screen capture using XShm (shared memory)

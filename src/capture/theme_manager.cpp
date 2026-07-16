@@ -1,25 +1,23 @@
 #include "theme_manager.h"
 
 #include <dirent.h>
-#include <sys/stat.h>
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <sys/stat.h>
 
-ThemeManager::ThemeManager()
-{
-}
+ThemeManager::ThemeManager() {}
 
 bool ThemeManager::load_board_theme(const std::string &board_name)
 {
   std::string corner_path = "themes/chessboard/" + board_name + "/board_corner.png";
   cv::Mat corner = cv::imread(corner_path, cv::IMREAD_COLOR);
-  
+
   if (corner.empty())
   {
     std::cerr << "[ThemeManager] Failed to load board corner template: " << corner_path << "\n";
     return false;
   }
-  
+
   board_corner_ = corner;
   active_board_ = board_name;
   return true;
@@ -29,12 +27,8 @@ bool ThemeManager::load_piece_theme(const std::string &piece_name)
 {
   piece_templates_.clear();
 
-  std::map<int, std::string> piece_files = {
-      {1, "wp.png"}, {2, "wn.png"}, {3, "wb.png"},
-      {4, "wr.png"}, {5, "wq.png"}, {6, "wk.png"},
-      {7, "bp.png"}, {8, "bn.png"}, {9, "bb.png"},
-      {10, "br.png"}, {11, "bq.png"}, {12, "bk.png"}
-  };
+  std::map<int, std::string> piece_files = {{1, "wp.png"}, {2, "wn.png"}, {3, "wb.png"}, {4, "wr.png"},  {5, "wq.png"},  {6, "wk.png"},
+                                            {7, "bp.png"}, {8, "bn.png"}, {9, "bb.png"}, {10, "br.png"}, {11, "bq.png"}, {12, "bk.png"}};
 
   bool all_loaded = true;
   std::string base_path = "themes/pieces/" + piece_name + "/";
@@ -57,7 +51,7 @@ bool ThemeManager::load_piece_theme(const std::string &piece_name)
         cv::Mat bgr;
         cv::merge(std::vector<cv::Mat>{channels[0], channels[1], channels[2]}, bgr);
         piece_templates_[kv.first] = bgr;
-        
+
         cv::Mat mask = channels[3];
         // We use the exact mask without heavy erosion so we preserve the dark outlines.
         // Preserving outlines ensures empty light squares aren't falsely detected as white pieces.
@@ -83,7 +77,8 @@ bool ThemeManager::load_piece_theme(const std::string &piece_name)
 bool ThemeManager::save_default_config(const std::string &board_name, const std::string &piece_name) const
 {
   std::ofstream out("themes/default.cfg");
-  if (!out.is_open()) return false;
+  if (!out.is_open())
+    return false;
   out << board_name << "\n" << piece_name << "\n";
   return true;
 }
@@ -91,8 +86,9 @@ bool ThemeManager::save_default_config(const std::string &board_name, const std:
 bool ThemeManager::load_default_config(std::string &out_board_name, std::string &out_piece_name) const
 {
   std::ifstream in("themes/default.cfg");
-  if (!in.is_open()) return false;
-  
+  if (!in.is_open())
+    return false;
+
   if (std::getline(in, out_board_name) && std::getline(in, out_piece_name))
   {
     return true;

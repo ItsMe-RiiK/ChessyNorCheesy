@@ -1,9 +1,9 @@
 #ifndef CHESSBOT_THEME_MANAGER_H
 #define CHESSBOT_THEME_MANAGER_H
 
+#include <map>
 #include <opencv2/opencv.hpp>
 #include <string>
-#include <map>
 #include <vector>
 
 /*
@@ -35,13 +35,20 @@ public:
   std::vector<std::string> get_available_pieces() const;
 
   // Currently loaded themes
-  std::string get_active_board_name() const { return active_board_; }
-  std::string get_active_piece_name() const { return active_piece_; }
+  std::string get_active_board_name() const
+  {
+    return active_board_;
+  }
+
+  std::string get_active_piece_name() const
+  {
+    return active_piece_;
+  }
 
 private:
   std::string active_board_;
   std::string active_piece_;
-  
+
   std::map<int, cv::Mat> piece_templates_;
   std::map<int, cv::Mat> piece_masks_;
   cv::Mat board_corner_;

@@ -1,8 +1,8 @@
 #ifndef CHESSBOT_BOT_CONTROLLER_H
 #define CHESSBOT_BOT_CONTROLLER_H
 
-#include "../capture/theme_manager.h"
 #include "../capture/screen_capture.h"
+#include "../capture/theme_manager.h"
 #include "../chess/board_reader.h"
 #include "../chess/game_state.h"
 #include "../chess/stockfish.h"

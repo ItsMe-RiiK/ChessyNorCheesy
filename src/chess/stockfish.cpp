@@ -2,7 +2,6 @@
 
 #include <chrono>
 #include <cstdio>
-#include <cstring>
 #include <poll.h>
 #include <signal.h>
 #include <sstream>
@@ -10,11 +9,7 @@
 #include <thread>
 #include <unistd.h>
 
-StockfishEngine::StockfishEngine()
-    : child_pid_(-1), to_engine_fd_(-1), from_engine_fd_(-1),
-      last_score_(0)
-{
-}
+StockfishEngine::StockfishEngine() : child_pid_(-1), to_engine_fd_(-1), from_engine_fd_(-1), last_score_(0) {}
 
 StockfishEngine::~StockfishEngine()
 {
@@ -26,7 +21,7 @@ bool StockfishEngine::start(const std::string &path)
   if (child_pid_ > 0)
     return true; // Already running
 
-  int to_engine[2];   // parent writes → child reads (stdin)
+  int to_engine[2]; // parent writes → child reads (stdin)
   int from_engine[2]; // child writes → parent reads (stdout)
 
   if (pipe(to_engine) < 0 || pipe(from_engine) < 0)
@@ -46,7 +41,7 @@ bool StockfishEngine::start(const std::string &path)
   if (child_pid_ == 0)
   {
     // Child process — become Stockfish
-    close(to_engine[1]);   // Close write end of stdin pipe
+    close(to_engine[1]); // Close write end of stdin pipe
     close(from_engine[0]); // Close read end of stdout pipe
 
     dup2(to_engine[0], STDIN_FILENO);
@@ -64,7 +59,7 @@ bool StockfishEngine::start(const std::string &path)
   }
 
   // Parent process
-  close(to_engine[0]);   // Close read end
+  close(to_engine[0]); // Close read end
   close(from_engine[1]); // Close write end
 
   to_engine_fd_ = to_engine[1];
@@ -201,9 +196,7 @@ std::string StockfishEngine::wait_for(const std::string &prefix, int timeout_ms)
   while (true)
   {
     // Check timeout
-    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-                       std::chrono::steady_clock::now() - start)
-                       .count();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
     if (elapsed >= timeout_ms)
       return "";
 
@@ -290,7 +283,7 @@ std::string StockfishEngine::get_best_move(int depth)
   std::string token, move;
 
   iss >> token; // "bestmove"
-  iss >> move;  // "e2e4"
+  iss >> move; // "e2e4"
 
   return move;
 }
@@ -312,7 +305,7 @@ std::string StockfishEngine::get_best_move_time(int time_ms)
   std::string token, move;
 
   iss >> token; // "bestmove"
-  iss >> move;  // "e2e4"
+  iss >> move; // "e2e4"
 
   return move;
 }

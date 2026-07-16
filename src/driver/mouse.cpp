@@ -1,6 +1,8 @@
 #include "mouse.h"
+
 #include "../rkkdr_common.h"
 
+#include <X11/extensions/XTest.h>
 #include <chrono>
 #include <cstdio>
 #include <cstring>
@@ -9,7 +11,6 @@
 #include <random>
 #include <thread>
 #include <unistd.h>
-#include <X11/extensions/XTest.h>
 
 static std::mt19937 &get_rng()
 {
@@ -17,11 +18,9 @@ static std::mt19937 &get_rng()
   return rng;
 }
 
-RkkdrMouse::RkkdrMouse()
-    : fd_(-1), dev_path_("/dev/rkkdr_mouse"), display_(nullptr),
-      click_delay_min_ms_(30), click_delay_max_ms_(80),
-      move_delay_min_ms_(5), move_delay_max_ms_(15),
-      jitter_pixels_(2)
+RkkdrMouse::RkkdrMouse() :
+    fd_(-1), dev_path_("/dev/rkkdr_mouse"), display_(nullptr), click_delay_min_ms_(30), click_delay_max_ms_(80), move_delay_min_ms_(5),
+    move_delay_max_ms_(15), jitter_pixels_(2)
 {
 }
 
@@ -43,7 +42,8 @@ bool RkkdrMouse::open()
   }
 
   display_ = XOpenDisplay(nullptr);
-  if (!display_) {
+  if (!display_)
+  {
     fprintf(stderr, "[ChessBot][Mouse] Failed to open X11 display\n");
   }
 
@@ -53,7 +53,8 @@ bool RkkdrMouse::open()
 
 void RkkdrMouse::close()
 {
-  if (display_) {
+  if (display_)
+  {
     XCloseDisplay(display_);
     display_ = nullptr;
   }
@@ -177,14 +178,15 @@ bool RkkdrMouse::drag(int from_x, int from_y, int to_x, int to_y)
   int dx = to_x - from_x;
   int dy = to_y - from_y;
   int steps = 20;
-  
-  for (int i = 1; i <= steps; ++i) {
+
+  for (int i = 1; i <= steps; ++i)
+  {
     int cur_x = from_x + (dx * i) / steps;
     int cur_y = from_y + (dy * i) / steps;
-    
+
     // We explicitly call send_cmd directly here to avoid jitter stacking
     send_cmd(RKKDR_MOUSE_ABS, 0, cur_x, cur_y);
-    std::this_thread::sleep_for(std::chrono::milliseconds(5)); 
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
   }
 
   // Ensure we reach the exact destination

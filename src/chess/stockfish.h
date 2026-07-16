@@ -1,7 +1,6 @@
 #ifndef CHESSBOT_STOCKFISH_H
 #define CHESSBOT_STOCKFISH_H
 
-#include <cstdint>
 #include <string>
 
 /*
@@ -54,7 +53,7 @@ public:
 
 private:
   pid_t child_pid_;
-  int to_engine_fd_;   // pipe: write to Stockfish's stdin
+  int to_engine_fd_; // pipe: write to Stockfish's stdin
   int from_engine_fd_; // pipe: read from Stockfish's stdout
 
   std::string engine_info_;

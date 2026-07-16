@@ -2,6 +2,7 @@
 #define CHESSBOT_GAME_STATE_H
 
 #include "board_reader.h"
+
 #include <string>
 #include <vector>
 

@@ -1,8 +1,3 @@
-# ============================================================
-# ChessCom — Chess.com Automation Bot
-# Build System
-# ============================================================
-
 CXX := g++
 CXXFLAGS := -std=c++17 -O2 -Wall -Wextra -Wno-unused-parameter
 BIN_DIR := bin

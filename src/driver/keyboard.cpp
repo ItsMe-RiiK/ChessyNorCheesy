@@ -1,4 +1,5 @@
 #include "keyboard.h"
+
 #include "../rkkdr_common.h"
 
 #include <chrono>
@@ -9,10 +10,7 @@
 #include <thread>
 #include <unistd.h>
 
-RkkdrKeyboard::RkkdrKeyboard()
-    : fd_(-1), dev_path_("/dev/rkkdr_keyboard")
-{
-}
+RkkdrKeyboard::RkkdrKeyboard() : fd_(-1), dev_path_("/dev/rkkdr_keyboard") {}
 
 RkkdrKeyboard::~RkkdrKeyboard()
 {

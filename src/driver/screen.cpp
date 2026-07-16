@@ -1,4 +1,5 @@
 #include "screen.h"
+
 #include "../rkkdr_common.h"
 
 #include <cstdio>
@@ -7,8 +8,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-RkkdrScreen::RkkdrScreen()
-    : fd_(-1), dev_path_("/dev/rkkdr_screen"), info_valid_(false)
+RkkdrScreen::RkkdrScreen() : fd_(-1), dev_path_("/dev/rkkdr_screen"), info_valid_(false)
 {
   memset(&cached_info_, 0, sizeof(cached_info_));
 }
@@ -74,8 +74,7 @@ bool RkkdrScreen::get_info(ScreenInfo &info)
   cached_info_ = info;
   info_valid_ = true;
 
-  printf("[ChessBot][Screen] Display: %ux%u @ %ubpp\n",
-         info.width, info.height, info.bpp);
+  printf("[ChessBot][Screen] Display: %ux%u @ %ubpp\n", info.width, info.height, info.bpp);
 
   return true;
 }

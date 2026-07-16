@@ -1,9 +1,9 @@
 #ifndef CHESSBOT_MOUSE_H
 #define CHESSBOT_MOUSE_H
 
+#include <X11/Xlib.h>
 #include <cstdint>
 #include <string>
-#include <X11/Xlib.h>
 
 /*
  * RkkdrMouse — Userspace wrapper for /dev/rkkdr_mouse
@@ -48,7 +48,7 @@ public:
 private:
   int fd_;
   std::string dev_path_;
-  Display* display_;
+  Display *display_;
 
   // Human-like timing
   int click_delay_min_ms_;

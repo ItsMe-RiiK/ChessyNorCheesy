@@ -34,7 +34,6 @@ static GtkWidget *depth_scale;
 static GtkWidget *delay_min_spin;
 static GtkWidget *delay_max_spin;
 static GtkWidget *color_combo;
-static GtkWidget *theme_combo;
 
 // Calibration state
 static std::atomic<int> calib_state(0); // 0=idle, 1=waiting_first, 2=waiting_second
@@ -208,8 +207,7 @@ static void on_calibrate_clicked(GtkWidget *widget, gpointer data)
   {
     calib_state = 1;
     gtk_button_set_label(GTK_BUTTON(widget), "Click TOP-LEFT corner (a8)...");
-    gtk_label_set_text(GTK_LABEL(status_label),
-                       "CALIBRATING: Click the TOP-LEFT corner of the board (a8 square)");
+    gtk_label_set_text(GTK_LABEL(status_label), "CALIBRATING: Click the TOP-LEFT corner of the board (a8 square)");
   }
 }
 
@@ -314,8 +312,7 @@ static void input_listener_thread()
               Window child;
               int root_x, root_y, win_x, win_y;
               unsigned int mask;
-              XQueryPointer(dpy, root, &root, &child,
-                            &root_x, &root_y, &win_x, &win_y, &mask);
+              XQueryPointer(dpy, root, &root, &child, &root_x, &root_y, &win_x, &win_y, &mask);
               XCloseDisplay(dpy);
 
               if (calib_state == 1)
@@ -342,7 +339,8 @@ static void input_listener_thread()
                       gtk_button_set_label(GTK_BUTTON(calibrate_btn), "🎯 Calibrate Board");
                       return G_SOURCE_REMOVE;
                     },
-                    NULL);
+                    NULL
+                );
               }
             }
           }
@@ -364,81 +362,79 @@ static void apply_css(GtkWidget *widget)
 {
   GtkCssProvider *provider = gtk_css_provider_new();
 
-  const char *css =
-      "window {"
-      "  background-color: #1a1a2e;"
-      "}"
-      "label {"
-      "  color: #e0e0e0;"
-      "  font-family: 'JetBrains Mono', 'Fira Code', monospace;"
-      "}"
-      "label.title {"
-      "  font-size: 18px;"
-      "  font-weight: bold;"
-      "  color: #00d4ff;"
-      "}"
-      "label.section {"
-      "  font-size: 13px;"
-      "  font-weight: bold;"
-      "  color: #7b68ee;"
-      "}"
-      "label.status {"
-      "  font-size: 12px;"
-      "  color: #ffd700;"
-      "}"
-      "label.mono {"
-      "  font-size: 11px;"
-      "  color: #b0b0b0;"
-      "}"
-      "button, togglebutton {"
-      "  background: linear-gradient(180deg, #2d2d5e, #1e1e3f);"
-      "  color: #e0e0e0;"
-      "  border: 1px solid #444;"
-      "  border-radius: 6px;"
-      "  padding: 8px 16px;"
-      "  font-family: 'JetBrains Mono', monospace;"
-      "  font-weight: bold;"
-      "}"
-      "button:hover {"
-      "  background: linear-gradient(180deg, #3d3d7e, #2e2e5f);"
-      "  border-color: #00d4ff;"
-      "}"
-      "button.toggle-on {"
-      "  background: linear-gradient(180deg, #cc3333, #991111);"
-      "  border-color: #ff4444;"
-      "}"
-      "scale trough {"
-      "  background-color: #333;"
-      "  border-radius: 4px;"
-      "}"
-      "scale highlight {"
-      "  background-color: #00d4ff;"
-      "  border-radius: 4px;"
-      "}"
-      "scale slider {"
-      "  background-color: #e0e0e0;"
-      "  border-radius: 50%;"
-      "}"
-      "combobox button {"
-      "  background: #2d2d5e;"
-      "  color: #e0e0e0;"
-      "}"
-      "spinbutton {"
-      "  background: #2d2d5e;"
-      "  color: #e0e0e0;"
-      "  border: 1px solid #444;"
-      "  border-radius: 4px;"
-      "}"
-      "separator {"
-      "  background-color: #333366;"
-      "  min-height: 1px;"
-      "}";
+  const char *css = "window {"
+                    "  background-color: #1a1a2e;"
+                    "}"
+                    "label {"
+                    "  color: #e0e0e0;"
+                    "  font-family: 'JetBrains Mono', 'Fira Code', monospace;"
+                    "}"
+                    "label.title {"
+                    "  font-size: 18px;"
+                    "  font-weight: bold;"
+                    "  color: #00d4ff;"
+                    "}"
+                    "label.section {"
+                    "  font-size: 13px;"
+                    "  font-weight: bold;"
+                    "  color: #7b68ee;"
+                    "}"
+                    "label.status {"
+                    "  font-size: 12px;"
+                    "  color: #ffd700;"
+                    "}"
+                    "label.mono {"
+                    "  font-size: 11px;"
+                    "  color: #b0b0b0;"
+                    "}"
+                    "button, togglebutton {"
+                    "  background: linear-gradient(180deg, #2d2d5e, #1e1e3f);"
+                    "  color: #e0e0e0;"
+                    "  border: 1px solid #444;"
+                    "  border-radius: 6px;"
+                    "  padding: 8px 16px;"
+                    "  font-family: 'JetBrains Mono', monospace;"
+                    "  font-weight: bold;"
+                    "}"
+                    "button:hover {"
+                    "  background: linear-gradient(180deg, #3d3d7e, #2e2e5f);"
+                    "  border-color: #00d4ff;"
+                    "}"
+                    "button.toggle-on {"
+                    "  background: linear-gradient(180deg, #cc3333, #991111);"
+                    "  border-color: #ff4444;"
+                    "}"
+                    "scale trough {"
+                    "  background-color: #333;"
+                    "  border-radius: 4px;"
+                    "}"
+                    "scale highlight {"
+                    "  background-color: #00d4ff;"
+                    "  border-radius: 4px;"
+                    "}"
+                    "scale slider {"
+                    "  background-color: #e0e0e0;"
+                    "  border-radius: 50%;"
+                    "}"
+                    "combobox button {"
+                    "  background: #2d2d5e;"
+                    "  color: #e0e0e0;"
+                    "}"
+                    "spinbutton {"
+                    "  background: #2d2d5e;"
+                    "  color: #e0e0e0;"
+                    "  border: 1px solid #444;"
+                    "  border-radius: 4px;"
+                    "}"
+                    "separator {"
+                    "  background-color: #333366;"
+                    "  min-height: 1px;"
+                    "}";
 
   gtk_css_provider_load_from_data(provider, css, -1, NULL);
   gtk_style_context_add_provider_for_screen(
-      gdk_screen_get_default(),
-      GTK_STYLE_PROVIDER(provider),
-      GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+      gdk_screen_get_default(), GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
+  );
   g_object_unref(provider);
 }
 
@@ -613,8 +609,7 @@ static void activate(GtkApplication *app, gpointer user_data)
   // Initialize bot subsystems
   if (!bot.init())
   {
-    gtk_label_set_text(GTK_LABEL(status_label),
-                       "INIT FAILED — check console for errors");
+    gtk_label_set_text(GTK_LABEL(status_label), "INIT FAILED — check console for errors");
   }
 }
 

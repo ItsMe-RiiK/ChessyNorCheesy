@@ -3,12 +3,9 @@
 #include <cstdio>
 #include <cstring>
 
-ScreenCapture::ScreenCapture()
-    : display_(nullptr), root_(0),
-      screen_width_(0), screen_height_(0),
-      ximage_(nullptr), shm_attached_(false),
-      cap_x_(0), cap_y_(0),
-      cap_width_(0), cap_height_(0)
+ScreenCapture::ScreenCapture() :
+    display_(nullptr), root_(0), screen_width_(0), screen_height_(0), ximage_(nullptr), shm_attached_(false), cap_x_(0), cap_y_(0),
+    cap_width_(0), cap_height_(0)
 {
   memset(&shm_info_, 0, sizeof(shm_info_));
 }
@@ -41,8 +38,7 @@ bool ScreenCapture::init()
     return false;
   }
 
-  printf("[ChessBot][Capture] X11 initialized: %dx%d, XShm available\n",
-         screen_width_, screen_height_);
+  printf("[ChessBot][Capture] X11 initialized: %dx%d, XShm available\n", screen_width_, screen_height_);
 
   return true;
 }
@@ -99,8 +95,7 @@ bool ScreenCapture::alloc_shm(int width, int height)
   int depth = DefaultDepth(display_, screen);
   Visual *visual = DefaultVisual(display_, screen);
 
-  ximage_ = XShmCreateImage(display_, visual, depth, ZPixmap,
-                             nullptr, &shm_info_, width, height);
+  ximage_ = XShmCreateImage(display_, visual, depth, ZPixmap, nullptr, &shm_info_, width, height);
 
   if (!ximage_)
   {
@@ -108,9 +103,7 @@ bool ScreenCapture::alloc_shm(int width, int height)
     return false;
   }
 
-  shm_info_.shmid = shmget(IPC_PRIVATE,
-                            ximage_->bytes_per_line * ximage_->height,
-                            IPC_CREAT | 0600);
+  shm_info_.shmid = shmget(IPC_PRIVATE, ximage_->bytes_per_line * ximage_->height, IPC_CREAT | 0600);
 
   if (shm_info_.shmid < 0)
   {
@@ -121,7 +114,7 @@ bool ScreenCapture::alloc_shm(int width, int height)
   }
 
   shm_info_.shmaddr = ximage_->data = (char *)shmat(shm_info_.shmid, nullptr, 0);
-  shm_info_.readOnly = False;
+  shm_info_.readOnly = false;
 
   if (!XShmAttach(display_, &shm_info_))
   {
@@ -134,7 +127,7 @@ bool ScreenCapture::alloc_shm(int width, int height)
   }
 
   // MUST sync with X server so it finishes attaching before we capture
-  XSync(display_, False);
+  XSync(display_, false);
 
   shm_attached_ = true;
   cap_width_ = width;
@@ -149,10 +142,14 @@ bool ScreenCapture::capture_region(int x, int y, int width, int height)
     return false;
 
   // Clamp to screen bounds
-  if (x < 0) x = 0;
-  if (y < 0) y = 0;
-  if (x + width > screen_width_) width = screen_width_ - x;
-  if (y + height > screen_height_) height = screen_height_ - y;
+  if (x < 0)
+    x = 0;
+  if (y < 0)
+    y = 0;
+  if (x + width > screen_width_)
+    width = screen_width_ - x;
+  if (y + height > screen_height_)
+    height = screen_height_ - y;
 
   if (width <= 0 || height <= 0)
     return false;
@@ -206,8 +203,7 @@ Pixel ScreenCapture::get_captured_pixel(int rel_x, int rel_y) const
 {
   Pixel p = {0, 0, 0};
 
-  if (!ximage_ || rel_x < 0 || rel_y < 0 ||
-      rel_x >= cap_width_ || rel_y >= cap_height_)
+  if (!ximage_ || rel_x < 0 || rel_y < 0 || rel_x >= cap_width_ || rel_y >= cap_height_)
     return p;
 
   unsigned long pixel = XGetPixel(ximage_, rel_x, rel_y);
@@ -227,8 +223,27 @@ const uint8_t *ScreenCapture::get_buffer() const
   return (const uint8_t *)ximage_->data;
 }
 
-int ScreenCapture::get_capture_width() const { return cap_width_; }
-int ScreenCapture::get_capture_height() const { return cap_height_; }
-int ScreenCapture::get_screen_width() const { return screen_width_; }
-int ScreenCapture::get_screen_height() const { return screen_height_; }
-int ScreenCapture::get_bytes_per_line() const { return ximage_ ? ximage_->bytes_per_line : 0; }
+int ScreenCapture::get_capture_width() const
+{
+  return cap_width_;
+}
+
+int ScreenCapture::get_capture_height() const
+{
+  return cap_height_;
+}
+
+int ScreenCapture::get_screen_width() const
+{
+  return screen_width_;
+}
+
+int ScreenCapture::get_screen_height() const
+{
+  return screen_height_;
+}
+
+int ScreenCapture::get_bytes_per_line() const
+{
+  return ximage_ ? ximage_->bytes_per_line : 0;
+}

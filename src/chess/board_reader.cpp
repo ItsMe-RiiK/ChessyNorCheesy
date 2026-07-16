@@ -1,18 +1,12 @@
 #include "board_reader.h"
 
 #include <algorithm>
-#include <cmath>
 #include <cstdio>
 #include <iostream>
 
-BoardReader::BoardReader(ScreenCapture &capture, ThemeManager &theme_manager)
-    : capture_(capture),
-      theme_manager_(theme_manager),
-      is_calibrated_(false),
-      playing_white_(true),
-      board_tl_x_(0), board_tl_y_(0),
-      board_br_x_(0), board_br_y_(0),
-      square_size_(0)
+BoardReader::BoardReader(ScreenCapture &capture, ThemeManager &theme_manager) :
+    capture_(capture), theme_manager_(theme_manager), is_calibrated_(false), playing_white_(true), board_tl_x_(0), board_tl_y_(0),
+    board_br_x_(0), board_br_y_(0), square_size_(0)
 {
 }
 
@@ -23,17 +17,15 @@ cv::Mat BoardReader::capture_to_mat()
     return cv::Mat();
 
   // ScreenCapture returns BGRA format pixels
-  cv::Mat img(capture_.get_capture_height(), capture_.get_capture_width(), 
-              CV_8UC4, (void*)buffer, capture_.get_bytes_per_line());
-  
+  cv::Mat img(capture_.get_capture_height(), capture_.get_capture_width(), CV_8UC4, (void *)buffer, capture_.get_bytes_per_line());
+
   // OpenCV matchTemplate often works better with BGR or grayscale
   cv::Mat bgr;
   cv::cvtColor(img, bgr, cv::COLOR_BGRA2BGR, 3);
   return bgr;
 }
 
-void BoardReader::calibrate(int top_left_x, int top_left_y,
-                            int bottom_right_x, int bottom_right_y)
+void BoardReader::calibrate(int top_left_x, int top_left_y, int bottom_right_x, int bottom_right_y)
 {
   board_tl_x_ = std::min(top_left_x, bottom_right_x);
   board_tl_y_ = std::min(top_left_y, bottom_right_y);
@@ -45,9 +37,11 @@ void BoardReader::calibrate(int top_left_x, int top_left_y,
 
   is_calibrated_ = true;
 
-  printf("[ChessBot][BoardReader] Calibrated: board at (%d, %d), "
-         "square size %d\n",
-         board_tl_x_, board_tl_y_, square_size_);
+  printf(
+      "[ChessBot][BoardReader] Calibrated: board at (%d, %d), "
+      "square size %d\n",
+      board_tl_x_, board_tl_y_, square_size_
+  );
 }
 
 bool BoardReader::auto_calibrate(std::string &detected_board, std::string &detected_pieces)
@@ -102,9 +96,11 @@ bool BoardReader::auto_calibrate(std::string &detected_board, std::string &detec
 
     for (const auto &b : boards)
     {
-      if (!theme_manager_.load_board_theme(b)) continue;
+      if (!theme_manager_.load_board_theme(b))
+        continue;
       cv::Mat corner = theme_manager_.get_board_corner_template();
-      if (corner.empty()) continue;
+      if (corner.empty())
+        continue;
 
       cv::Mat result;
       cv::matchTemplate(screen, corner, result, cv::TM_CCOEFF_NORMED);
@@ -149,8 +145,9 @@ bool BoardReader::auto_calibrate(std::string &detected_board, std::string &detec
 
     for (const auto &p : pieces)
     {
-      if (!theme_manager_.load_piece_theme(p)) continue;
-      
+      if (!theme_manager_.load_piece_theme(p))
+        continue;
+
       // Calculate an average confidence score for this piece theme by running a quick read_board
       double total_confidence = 0.0;
       int pieces_found = 0;
@@ -162,38 +159,51 @@ bool BoardReader::auto_calibrate(std::string &detected_board, std::string &detec
           int sx = file * square_size_;
           int sy = rank * square_size_;
           cv::Rect square_roi(board_tl_x_ + sx, board_tl_y_ + sy, square_size_, square_size_);
-          if (square_roi.x < 0 || square_roi.y < 0 ||
-              square_roi.x + square_roi.width > screen.cols ||
-              square_roi.y + square_roi.height > screen.rows) continue;
+          if (square_roi.x < 0 || square_roi.y < 0 || square_roi.x + square_roi.width > screen.cols ||
+              square_roi.y + square_roi.height > screen.rows)
+            continue;
 
           cv::Mat square_img = screen(square_roi);
-          
+
           double highest_sq_val = 0.0;
           for (int pid = 1; pid <= 12; pid++)
           {
             cv::Mat templ = theme_manager_.get_template(pid);
             cv::Mat mask = theme_manager_.get_mask(pid);
-            if (templ.empty()) continue;
-            
+            if (templ.empty())
+              continue;
+
             // Prevent crash if template is larger than ROI
             cv::Mat search_templ = templ;
             cv::Mat search_mask = mask;
-            if (search_templ.cols > square_img.cols || search_templ.rows > square_img.rows) {
-              cv::resize(search_templ, search_templ, cv::Size(std::min(search_templ.cols, square_img.cols), std::min(search_templ.rows, square_img.rows)));
-              if (!search_mask.empty()) {
-                cv::resize(search_mask, search_mask, cv::Size(std::min(search_mask.cols, square_img.cols), std::min(search_mask.rows, square_img.rows)));
+            if (search_templ.cols > square_img.cols || search_templ.rows > square_img.rows)
+            {
+              cv::resize(
+                  search_templ, search_templ,
+                  cv::Size(std::min(search_templ.cols, square_img.cols), std::min(search_templ.rows, square_img.rows))
+              );
+              if (!search_mask.empty())
+              {
+                cv::resize(
+                    search_mask, search_mask,
+                    cv::Size(std::min(search_mask.cols, square_img.cols), std::min(search_mask.rows, square_img.rows))
+                );
               }
             }
 
             cv::Mat result;
-            if (!search_mask.empty()) {
+            if (!search_mask.empty())
+            {
               cv::matchTemplate(square_img, search_templ, result, cv::TM_CCOEFF_NORMED, search_mask);
-            } else {
+            }
+            else
+            {
               cv::matchTemplate(square_img, search_templ, result, cv::TM_CCOEFF_NORMED);
             }
             double minV, maxV;
             cv::minMaxLoc(result, &minV, &maxV);
-            if (maxV > highest_sq_val) highest_sq_val = maxV;
+            if (maxV > highest_sq_val)
+              highest_sq_val = maxV;
           }
           if (highest_sq_val > 0.7)
           {
@@ -229,8 +239,10 @@ bool BoardReader::auto_calibrate(std::string &detected_board, std::string &detec
     theme_manager_.load_piece_theme(def_piece);
   }
 
-  printf("[ChessBot][BoardReader] Auto-Calibrated: board at (%d, %d), square %d. Theme: %s/%s\n",
-         board_tl_x_, board_tl_y_, square_size_, detected_board.c_str(), detected_pieces.c_str());
+  printf(
+      "[ChessBot][BoardReader] Auto-Calibrated: board at (%d, %d), square %d. Theme: %s/%s\n", board_tl_x_, board_tl_y_, square_size_,
+      detected_board.c_str(), detected_pieces.c_str()
+  );
 
   return true;
 }
@@ -255,8 +267,7 @@ int BoardReader::get_square_size() const
   return square_size_;
 }
 
-void BoardReader::get_square_center(int file, int rank,
-                                    int &screen_x, int &screen_y) const
+void BoardReader::get_square_center(int file, int rank, int &screen_x, int &screen_y) const
 {
   // file: 0=a, 7=h — rank: 0=1, 7=8
   // If playing white: a8 is at top-left
@@ -285,9 +296,9 @@ Board BoardReader::read_board()
 
   // Increase margin to 16 to allow for up to 16 pixels of manual calibration error or window shift
   int margin = 16;
-  if (!capture_.capture_region(board_tl_x_ - margin, board_tl_y_ - margin, 
-                               (square_size_ * 8) + (margin * 2), 
-                               (square_size_ * 8) + (margin * 2)))
+  if (!capture_.capture_region(
+          board_tl_x_ - margin, board_tl_y_ - margin, (square_size_ * 8) + (margin * 2), (square_size_ * 8) + (margin * 2)
+      ))
     return board;
 
   cv::Mat screen = capture_to_mat();
@@ -313,8 +324,10 @@ Board BoardReader::read_board()
       int roi_h = square_size_ + (margin * 2);
 
       // Clamp width and height to screen bounds
-      if (roi_x + roi_w > screen.cols) roi_w = screen.cols - roi_x;
-      if (roi_y + roi_h > screen.rows) roi_h = screen.rows - roi_y;
+      if (roi_x + roi_w > screen.cols)
+        roi_w = screen.cols - roi_x;
+      if (roi_y + roi_h > screen.rows)
+        roi_h = screen.rows - roi_y;
 
       cv::Rect square_roi(roi_x, roi_y, roi_w, roi_h);
       if (square_roi.width <= 0 || square_roi.height <= 0)
@@ -323,13 +336,15 @@ Board BoardReader::read_board()
       }
 
       cv::Mat square_img = screen(square_roi);
-      
+
       // DEBUG: dump square image to disk once
       static bool dumped = false;
-      if (!dumped && rank == 6 && file == 0) { // e.g., a white pawn on a2
-          cv::imwrite("debug_square_" + std::to_string(rank) + "_" + std::to_string(file) + ".png", square_img);
+      if (!dumped && rank == 6 && file == 0)
+      { // e.g., a white pawn on a2
+        cv::imwrite("debug_square_" + std::to_string(rank) + "_" + std::to_string(file) + ".png", square_img);
       }
-      if (rank == 7 && file == 7) dumped = true;
+      if (rank == 7 && file == 7)
+        dumped = true;
 
       double best_match = 1e9; // SQDIFF is lower-is-better
       Piece best_piece = Piece::EMPTY;
@@ -344,14 +359,16 @@ Board BoardReader::read_board()
 
         cv::Mat search_templ = templ;
         cv::Mat search_mask = mask;
-        if (search_templ.cols != square_size_ || search_templ.rows != square_size_) {
+        if (search_templ.cols != square_size_ || search_templ.rows != square_size_)
+        {
           // Use linear interpolation for the BGR template to keep it smooth
           cv::resize(search_templ, search_templ, cv::Size(square_size_, square_size_), 0, 0, cv::INTER_LINEAR);
-          if (!search_mask.empty()) {
+          if (!search_mask.empty())
+          {
             cv::threshold(search_mask, search_mask, 240, 255, cv::THRESH_BINARY);
             cv::resize(search_mask, search_mask, cv::Size(square_size_, square_size_), 0, 0, cv::INTER_NEAREST);
             // Erode mask slightly so the very edge of the piece doesn't dominate the difference
-            cv::erode(search_mask, search_mask, cv::Mat(), cv::Point(-1,-1), 1);
+            cv::erode(search_mask, search_mask, cv::Mat(), cv::Point(-1, -1), 1);
           }
         }
 
@@ -385,16 +402,20 @@ Board BoardReader::read_board()
         }
       }
 
-      if (best_match < 0.25) 
+      if (best_match < 0.25)
       {
         board[rank][file] = best_piece;
       }
       else
       {
-        if (best_match < 0.6) {
-           // We expect empty squares to score around 0.30 - 0.50. 
-           // If they score under 0.25, they get incorrectly marked as pieces.
-           printf("[ChessBot][BoardReader] Square (%d, %d) was borderline empty with SQDIFF %.2f for piece %d\n", rank, file, best_match, (int)best_piece);
+        if (best_match < 0.6)
+        {
+          // We expect empty squares to score around 0.30 - 0.50.
+          // If they score under 0.25, they get incorrectly marked as pieces.
+          printf(
+              "[ChessBot][BoardReader] Square (%d, %d) was borderline empty with SQDIFF %.2f for piece %d\n", rank, file, best_match,
+              (int)best_piece
+          );
         }
         board[rank][file] = Piece::EMPTY;
       }
@@ -408,19 +429,32 @@ char BoardReader::piece_to_fen(Piece p)
 {
   switch (p)
   {
-  case Piece::WHITE_PAWN: return 'P';
-  case Piece::WHITE_KNIGHT: return 'N';
-  case Piece::WHITE_BISHOP: return 'B';
-  case Piece::WHITE_ROOK: return 'R';
-  case Piece::WHITE_QUEEN: return 'Q';
-  case Piece::WHITE_KING: return 'K';
-  case Piece::BLACK_PAWN: return 'p';
-  case Piece::BLACK_KNIGHT: return 'n';
-  case Piece::BLACK_BISHOP: return 'b';
-  case Piece::BLACK_ROOK: return 'r';
-  case Piece::BLACK_QUEEN: return 'q';
-  case Piece::BLACK_KING: return 'k';
-  default: return '.';
+  case Piece::WHITE_PAWN:
+    return 'P';
+  case Piece::WHITE_KNIGHT:
+    return 'N';
+  case Piece::WHITE_BISHOP:
+    return 'B';
+  case Piece::WHITE_ROOK:
+    return 'R';
+  case Piece::WHITE_QUEEN:
+    return 'Q';
+  case Piece::WHITE_KING:
+    return 'K';
+  case Piece::BLACK_PAWN:
+    return 'p';
+  case Piece::BLACK_KNIGHT:
+    return 'n';
+  case Piece::BLACK_BISHOP:
+    return 'b';
+  case Piece::BLACK_ROOK:
+    return 'r';
+  case Piece::BLACK_QUEEN:
+    return 'q';
+  case Piece::BLACK_KING:
+    return 'k';
+  default:
+    return '.';
   }
 }
 
