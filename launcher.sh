@@ -65,7 +65,7 @@ fi
 
 # Step 4: Grant device permissions
 echo -e "${CYAN}[ChessBot] Granting permissions to devices so GUI can run without root...${NC}"
-echo 1234 | sudo -S chmod 666 /dev/rkkdr_mouse /dev/rkkdr_keyboard /dev/rkkdr_screen /dev/input/event* 2>/dev/null || true
+sudo -S chmod 666 /dev/rkkdr_mouse /dev/rkkdr_keyboard /dev/rkkdr_screen /dev/input/event* 2>/dev/null || true
 
 # Step 5: Launch the bot
 echo ""
