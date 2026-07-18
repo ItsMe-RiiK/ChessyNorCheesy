@@ -1,8 +1,17 @@
 CXX := g++
 CXXFLAGS := -std=c++17 -O2 -Wall -Wextra -Wno-unused-parameter
-BIN_DIR := bin
+# Dynamically detect if we are inside the KernelDriver monorepo or standalone
+ifneq ($(wildcard ../../src/main.c),)
+    # Monorepo mode
+    ROOT_DIR := $(abspath ../..)
+    RELEASE_DIR := $(ROOT_DIR)/release
+else
+    # Standalone submodule mode
+    RELEASE_DIR := release
+endif
 SRC_DIR := src
-TARGET := $(BIN_DIR)/ChessBot
+BUILD_DIR := build
+TARGET := $(RELEASE_DIR)/ChessBot
 
 # Source files
 SRCS := $(SRC_DIR)/main.cpp \
@@ -17,7 +26,7 @@ SRCS := $(SRC_DIR)/main.cpp \
         $(SRC_DIR)/bot/bot_controller.cpp \
         $(SRC_DIR)/bot/http_server.cpp
 
-OBJS := $(SRCS:.cpp=.o)
+OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
 
 # Libraries
 # GTK3 for GUI
@@ -44,14 +53,15 @@ ALL_LIBS := $(GTK_LIBS) $(X11_LIBS) $(OPENCV_LIBS) $(THREAD_LIBS)
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	@mkdir -p $(BIN_DIR)
+	@mkdir -p $(RELEASE_DIR)
 	$(CXX) $(ALL_CFLAGS) -o $@ $^ $(ALL_LIBS)
 	@echo ""
 	@echo "✓ Build complete: $(TARGET)"
 	@echo "  Run with: sudo -E $(TARGET)"
 	@echo "  Or use:   ./launcher.sh"
 
-$(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(ALL_CFLAGS) -c -o $@ $<
 
 clean:

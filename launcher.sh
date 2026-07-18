@@ -9,9 +9,14 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# Allow DRIVER_DIR to be overridden by env variable, otherwise default to the parent KernelDriver directory
-DRIVER_DIR="${DRIVER_DIR:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
-BIN="$SCRIPT_DIR/bin/ChessBot"
+# Dynamically detect if we are in the monorepo or standalone
+if [ -f "../../src/main.c" ]; then
+    DRIVER_DIR="${DRIVER_DIR:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
+    BIN="$SCRIPT_DIR/../../release/ChessBot"
+else
+    DRIVER_DIR="RKKDR"
+    BIN="$SCRIPT_DIR/release/ChessBot"
+fi
 
 CYAN='\033[0;36m'
 GREEN='\033[0;32m'
