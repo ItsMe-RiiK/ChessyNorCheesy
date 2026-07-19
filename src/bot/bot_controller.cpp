@@ -11,7 +11,7 @@ static std::mt19937 &get_bot_rng()
 }
 
 BotController::BotController() :
-    board_reader_(capture_, theme_manager_), running_(false), should_stop_(false), stockfish_depth_(20), move_delay_min_ms_(800),
+    board_reader_(capture_, theme_manager_), running_(false), should_stop_(false), stockfish_depth_(5), move_delay_min_ms_(800),
     move_delay_max_ms_(1500), poll_interval_ms_(200)
 {
 }

@@ -255,7 +255,8 @@ static void input_listener_thread()
       struct input_event ev;
       while (read(events[i].data.fd, &ev, sizeof(ev)) > 0)
       {
-        if (!g_window_visible.load()) continue;
+        if (!g_window_visible.load())
+          continue;
 
         // Hotkey: backtick (`) to toggle bot
         if (ev.type == EV_KEY && ev.code == KEY_GRAVE && ev.value == 1)
@@ -507,12 +508,20 @@ static void activate(GtkApplication *app, gpointer user_data)
   gtk_container_set_border_width(GTK_CONTAINER(window), 16);
   gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
 
-  g_signal_connect(window, "window-state-event", G_CALLBACK(+[](GtkWidget *widget, GdkEventWindowState *event, gpointer user_data) -> gboolean {
-    if (event->changed_mask & GDK_WINDOW_STATE_ICONIFIED) {
-      g_window_visible = !(event->new_window_state & GDK_WINDOW_STATE_ICONIFIED);
-    }
-    return FALSE;
-  }), NULL);
+  g_signal_connect(
+      window, "window-state-event",
+      G_CALLBACK(
+          +[](GtkWidget *widget, GdkEventWindowState *event, gpointer user_data) -> gboolean
+          {
+            if (event->changed_mask & GDK_WINDOW_STATE_ICONIFIED)
+            {
+              g_window_visible = !(event->new_window_state & GDK_WINDOW_STATE_ICONIFIED);
+            }
+            return FALSE;
+          }
+      ),
+      NULL
+  );
 
   // Set the application icon
   GError *error = NULL;
@@ -573,7 +582,7 @@ static void activate(GtkApplication *app, gpointer user_data)
 
   gtk_box_pack_start(GTK_BOX(depth_hbox), create_label("Depth:", NULL), FALSE, FALSE, 0);
 
-  GtkAdjustment *depth_adj = gtk_adjustment_new(12.0, 1.0, 30.0, 1.0, 5.0, 0.0);
+  GtkAdjustment *depth_adj = gtk_adjustment_new(5.0, 1.0, 30.0, 1.0, 5.0, 0.0); // depth, min, max, step, page_size, page_increment
   depth_scale = gtk_scale_new(GTK_ORIENTATION_HORIZONTAL, depth_adj);
   gtk_scale_set_digits(GTK_SCALE(depth_scale), 0);
   gtk_scale_set_value_pos(GTK_SCALE(depth_scale), GTK_POS_RIGHT);
