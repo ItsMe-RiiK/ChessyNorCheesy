@@ -80,9 +80,6 @@ cd ChessyNotCheesy
 
 This project is strictly for **educational and research purposes**. Using automated bots on Chess.com violates their Terms of Service and will likely result in your account being banned. i do not have responsibility for any consequences that arise from using this software. Do not use this tool to cheat against human players.
 
-## Acknowledgments
-
-This project was inspired by the concept of a chess bot that operates entirely outside the browser. It is a testament to the power of modern computer vision and C++ optimization techniques. It is also a great way to learn about chess, computer vision, and software engineering. I would like to thank the Stockfish team for providing such a powerful chess engine and the OpenCV team for providing such a powerful computer vision library.
 
 ## License
 
