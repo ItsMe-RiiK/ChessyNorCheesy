@@ -47,10 +47,6 @@ public:
   // Manual calibration (fallback)
   void calibrate(int top_left_x, int top_left_y, int bottom_right_x, int bottom_right_y);
 
-  // Auto calibration using template matching on screen
-  // Returns true and populates detected_board and detected_pieces if successful
-  bool auto_calibrate(std::string &detected_board, std::string &detected_pieces);
-
   // Set whether playing as white (true) or black (false)
   void set_playing_white(bool white);
   bool is_playing_white() const;
@@ -74,6 +70,8 @@ public:
   // Calibration callback — set this to receive calibration click coordinates
   std::function<void(int, int)> on_calibration_click;
 
+  void clear_empty_templates();
+
 private:
   ScreenCapture &capture_;
   ThemeManager &theme_manager_;
@@ -86,9 +84,12 @@ private:
   int board_br_x_;
   int board_br_y_;
   int square_size_;
+  cv::Mat empty_light_templ_;
+  cv::Mat empty_dark_templ_;
 
   // OpenCV helper for converting ScreenCapture BGRA buffer to cv::Mat
   cv::Mat capture_to_mat();
+  void extract_empty_templates(const cv::Mat &screen);
 };
 
-#endif /* CHESSBOT_BOARD_READER_H */
+#endif

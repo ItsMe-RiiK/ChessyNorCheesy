@@ -7,7 +7,6 @@
 #include "../chess/game_state.h"
 #include "../chess/stockfish.h"
 #include "../driver/mouse.h"
-#include "http_server.h"
 
 #include <atomic>
 #include <functional>
@@ -39,8 +38,10 @@ public:
 
   // Calibration
   void calibrate(int tl_x, int tl_y, int br_x, int br_y);
-  bool auto_calibrate();
   bool is_calibrated() const;
+
+  // Reset Game
+  void reset_game();
 
   // Configuration
   void set_playing_white(bool white);
@@ -51,14 +52,16 @@ public:
   // Status getters for GUI
   std::string get_current_fen() const;
   std::string get_last_move() const;
+  std::string get_move_history() const;
   std::string get_engine_eval() const;
   std::string get_status() const;
   int get_stockfish_depth() const;
+  void set_status(const std::string &status);
 
   // Callbacks for GUI updates
   std::function<void(const std::string &)> on_status_change;
   std::function<void(const std::string &)> on_move_made;
-  std::function<void(const std::string &)> on_fen_update;
+  std::function<void(bool)> on_color_detected;
 
 private:
   // Subsystems
@@ -67,8 +70,7 @@ private:
   BoardReader board_reader_;
   GameState game_state_;
   StockfishEngine stockfish_;
-  RkkdrMouse mouse_;
-  BotHttpServer http_server_;
+  X11Mouse mouse_;
 
   // Bot loop thread
   std::thread bot_thread_;
@@ -96,9 +98,6 @@ private:
 
   // Random delay for human-like behavior
   void human_delay();
-
-  // Set status and fire callback
-  void set_status(const std::string &status);
 };
 
 #endif /* CHESSBOT_BOT_CONTROLLER_H */

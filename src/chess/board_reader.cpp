@@ -33,8 +33,15 @@ void BoardReader::calibrate(int top_left_x, int top_left_y, int bottom_right_x, 
   board_br_y_ = std::max(top_left_y, bottom_right_y);
 
   int board_w = board_br_x_ - board_tl_x_;
-  square_size_ = board_w / 8;
+  int sq_size = board_w / 8;
 
+  if (sq_size < 10)
+  {
+    std::cerr << "[ChessBot][BoardReader] Invalid calibration: board too small.\n";
+    return;
+  }
+
+  square_size_ = sq_size;
   is_calibrated_ = true;
 
   printf(
@@ -42,209 +49,6 @@ void BoardReader::calibrate(int top_left_x, int top_left_y, int bottom_right_x, 
       "square size %d\n",
       board_tl_x_, board_tl_y_, square_size_
   );
-}
-
-bool BoardReader::auto_calibrate(std::string &detected_board, std::string &detected_pieces)
-{
-  if (!capture_.capture_region(0, 0, capture_.get_screen_width(), capture_.get_screen_height()))
-  {
-    std::cerr << "[ChessBot][BoardReader] Failed to capture screen for auto-calibration.\n";
-    return false;
-  }
-
-  cv::Mat screen = capture_to_mat();
-  if (screen.empty())
-    return false;
-
-  // 1. Check default config first
-  std::string def_board, def_piece;
-  bool default_works = false;
-  if (theme_manager_.load_default_config(def_board, def_piece))
-  {
-    if (theme_manager_.load_board_theme(def_board))
-    {
-      cv::Mat corner_template = theme_manager_.get_board_corner_template();
-      cv::Mat result;
-      cv::matchTemplate(screen, corner_template, result, cv::TM_CCOEFF_NORMED);
-      double minVal, maxVal;
-      cv::Point minLoc, maxLoc;
-      cv::minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc);
-
-      if (maxVal >= 0.8)
-      {
-        default_works = true;
-        detected_board = def_board;
-        int tw = corner_template.cols;
-        square_size_ = (tw >= 300) ? (tw / 8) : tw;
-        board_tl_x_ = maxLoc.x;
-        board_tl_y_ = maxLoc.y;
-        board_br_x_ = board_tl_x_ + (square_size_ * 8);
-        board_br_y_ = board_tl_y_ + (square_size_ * 8);
-        is_calibrated_ = true;
-      }
-    }
-  }
-
-  // 2. Scan all boards if default failed
-  if (!default_works)
-  {
-    std::vector<std::string> boards = theme_manager_.get_available_boards();
-    double best_board_score = 0.0;
-    std::string best_board_name;
-    cv::Point best_board_loc;
-    int best_square_size = 0;
-
-    for (const auto &b : boards)
-    {
-      if (!theme_manager_.load_board_theme(b))
-        continue;
-      cv::Mat corner = theme_manager_.get_board_corner_template();
-      if (corner.empty())
-        continue;
-
-      cv::Mat result;
-      cv::matchTemplate(screen, corner, result, cv::TM_CCOEFF_NORMED);
-      double minVal, maxVal;
-      cv::Point minLoc, maxLoc;
-      cv::minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc);
-
-      if (maxVal > best_board_score)
-      {
-        best_board_score = maxVal;
-        best_board_name = b;
-        best_board_loc = maxLoc;
-        int tw = corner.cols;
-        best_square_size = (tw >= 300) ? (tw / 8) : tw;
-      }
-    }
-
-    if (best_board_score >= 0.8)
-    {
-      detected_board = best_board_name;
-      square_size_ = best_square_size;
-      board_tl_x_ = best_board_loc.x;
-      board_tl_y_ = best_board_loc.y;
-      board_br_x_ = board_tl_x_ + (square_size_ * 8);
-      board_br_y_ = board_tl_y_ + (square_size_ * 8);
-      is_calibrated_ = true;
-      theme_manager_.load_board_theme(best_board_name); // ensure it's the active one
-    }
-    else
-    {
-      return false; // Could not find any board
-    }
-  }
-
-  // 3. Scan all pieces (if default doesn't work, or we just want to ensure we have pieces)
-  // For simplicity, we rescan pieces if default failed or if we didn't check piece correctness yet.
-  if (!default_works)
-  {
-    std::vector<std::string> pieces = theme_manager_.get_available_pieces();
-    double best_piece_score = 0.0;
-    std::string best_piece_name;
-
-    for (const auto &p : pieces)
-    {
-      if (!theme_manager_.load_piece_theme(p))
-        continue;
-
-      // Calculate an average confidence score for this piece theme by running a quick read_board
-      double total_confidence = 0.0;
-      int pieces_found = 0;
-
-      for (int rank = 0; rank < 8; rank++)
-      {
-        for (int file = 0; file < 8; file++)
-        {
-          int sx = file * square_size_;
-          int sy = rank * square_size_;
-          cv::Rect square_roi(board_tl_x_ + sx, board_tl_y_ + sy, square_size_, square_size_);
-          if (square_roi.x < 0 || square_roi.y < 0 || square_roi.x + square_roi.width > screen.cols ||
-              square_roi.y + square_roi.height > screen.rows)
-            continue;
-
-          cv::Mat square_img = screen(square_roi);
-
-          double highest_sq_val = 0.0;
-          for (int pid = 1; pid <= 12; pid++)
-          {
-            cv::Mat templ = theme_manager_.get_template(pid);
-            cv::Mat mask = theme_manager_.get_mask(pid);
-            if (templ.empty())
-              continue;
-
-            // Prevent crash if template is larger than ROI
-            cv::Mat search_templ = templ;
-            cv::Mat search_mask = mask;
-            if (search_templ.cols > square_img.cols || search_templ.rows > square_img.rows)
-            {
-              cv::resize(
-                  search_templ, search_templ,
-                  cv::Size(std::min(search_templ.cols, square_img.cols), std::min(search_templ.rows, square_img.rows))
-              );
-              if (!search_mask.empty())
-              {
-                cv::resize(
-                    search_mask, search_mask,
-                    cv::Size(std::min(search_mask.cols, square_img.cols), std::min(search_mask.rows, square_img.rows))
-                );
-              }
-            }
-
-            cv::Mat result;
-            if (!search_mask.empty())
-            {
-              cv::matchTemplate(square_img, search_templ, result, cv::TM_CCOEFF_NORMED, search_mask);
-            }
-            else
-            {
-              cv::matchTemplate(square_img, search_templ, result, cv::TM_CCOEFF_NORMED);
-            }
-            double minV, maxV;
-            cv::minMaxLoc(result, &minV, &maxV);
-            if (maxV > highest_sq_val)
-              highest_sq_val = maxV;
-          }
-          if (highest_sq_val > 0.7)
-          {
-            total_confidence += highest_sq_val;
-            pieces_found++;
-          }
-        }
-      }
-
-      double avg_score = pieces_found > 0 ? (total_confidence / pieces_found) * pieces_found : 0;
-      if (avg_score > best_piece_score)
-      {
-        best_piece_score = avg_score;
-        best_piece_name = p;
-      }
-    }
-
-    if (!best_piece_name.empty())
-    {
-      detected_pieces = best_piece_name;
-      theme_manager_.load_piece_theme(best_piece_name);
-      theme_manager_.save_default_config(detected_board, detected_pieces);
-    }
-    else
-    {
-      // fallback
-      detected_pieces = "unknown";
-    }
-  }
-  else
-  {
-    detected_pieces = def_piece;
-    theme_manager_.load_piece_theme(def_piece);
-  }
-
-  printf(
-      "[ChessBot][BoardReader] Auto-Calibrated: board at (%d, %d), square %d. Theme: %s/%s\n", board_tl_x_, board_tl_y_, square_size_,
-      detected_board.c_str(), detected_pieces.c_str()
-  );
-
-  return true;
 }
 
 void BoardReader::set_playing_white(bool white)
@@ -288,6 +92,80 @@ void BoardReader::get_square_center(int file, int rank, int &screen_x, int &scre
   screen_y = board_tl_y_ + (screen_rank * square_size_) + (square_size_ / 2);
 }
 
+void BoardReader::clear_empty_templates()
+{
+  empty_light_templ_.release();
+  empty_dark_templ_.release();
+}
+
+void BoardReader::extract_empty_templates(const cv::Mat &screen)
+{
+  if (!empty_light_templ_.empty() && !empty_dark_templ_.empty())
+    return;
+
+  int best_light_edges = 1e9;
+  int best_dark_edges = 1e9;
+
+  // Find the light and dark squares with the absolute minimum number of Canny edges.
+  // Pieces have strong outlines (high edge count). Empty squares (even with wood grain) have very few edges.
+  for (int rank = 0; rank < 8; rank++)
+  {
+    for (int file = 0; file < 8; file++)
+    {
+      int screen_file = playing_white_ ? file : (7 - file);
+      int screen_rank = playing_white_ ? (7 - rank) : rank;
+
+      // Add the 16 pixel margin offset since the screen Mat was captured with margin
+      int margin = 16;
+      int sx = (screen_file * square_size_) + margin;
+      int sy = (screen_rank * square_size_) + margin;
+
+      cv::Rect square_roi(sx, sy, square_size_, square_size_);
+      if (square_roi.x < 0 || square_roi.y < 0 || square_roi.x + square_roi.width > screen.cols ||
+          square_roi.y + square_roi.height > screen.rows)
+        continue;
+
+      cv::Mat square_img = screen(square_roi);
+
+      // Crop the center 50% to avoid coordinates
+      int margin_x = square_img.cols * 0.25;
+      int margin_y = square_img.rows * 0.25;
+      cv::Rect center_roi(margin_x, margin_y, square_img.cols - 2 * margin_x, square_img.rows - 2 * margin_y);
+      cv::Mat center_img = square_img(center_roi);
+
+      cv::Mat gray, edges;
+      cv::cvtColor(center_img, gray, cv::COLOR_BGR2GRAY);
+      cv::Canny(gray, edges, 50, 150);
+      int edge_count = cv::countNonZero(edges);
+
+      bool is_dark = ((rank + file) % 2 == 0);
+
+      // We take the square with the least amount of edges (most likely to be completely empty)
+      if (is_dark)
+      {
+        if (edge_count < best_dark_edges)
+        {
+          best_dark_edges = edge_count;
+          empty_dark_templ_ = square_img.clone();
+        }
+      }
+      else
+      {
+        if (edge_count < best_light_edges)
+        {
+          best_light_edges = edge_count;
+          empty_light_templ_ = square_img.clone();
+        }
+      }
+    }
+  }
+
+  if (!empty_light_templ_.empty() && !empty_dark_templ_.empty())
+  {
+    printf("[ChessBot][BoardReader] Extracted dynamic empty templates (edges: L=%d, D=%d)\n", best_light_edges, best_dark_edges);
+  }
+}
+
 Board BoardReader::read_board()
 {
   Board board = {};
@@ -304,6 +182,9 @@ Board BoardReader::read_board()
   cv::Mat screen = capture_to_mat();
   if (screen.empty())
     return board;
+
+  // Extract empty templates on the fly from the current screen
+  extract_empty_templates(screen);
 
   // For every square, we crop it and match against all piece templates
   for (int rank = 0; rank < 8; rank++)
@@ -337,17 +218,29 @@ Board BoardReader::read_board()
 
       cv::Mat square_img = screen(square_roi);
 
-      // DEBUG: dump square image to disk once
-      static bool dumped = false;
-      if (!dumped && rank == 6 && file == 0)
-      { // e.g., a white pawn on a2
-        cv::imwrite("debug_square_" + std::to_string(rank) + "_" + std::to_string(file) + ".png", square_img);
+      // Fast-path: An empty square (even highlighted yellow) has no edges in its center.
+      // We crop the center to avoid rank/file coordinates printed on the edges.
+      cv::Mat square_gray;
+      cv::cvtColor(square_img, square_gray, cv::COLOR_BGR2GRAY);
+      int c_margin_x = square_gray.cols * 0.2;
+      int c_margin_y = square_gray.rows * 0.2;
+      cv::Rect center_roi(c_margin_x, c_margin_y, square_gray.cols - 2 * c_margin_x, square_gray.rows - 2 * c_margin_y);
+      cv::Mat center_gray = square_gray(center_roi);
+
+      cv::Mat edges;
+      cv::Canny(center_gray, edges, 50, 150);
+      if (cv::countNonZero(edges) < 15)
+      {
+        board[rank][file] = Piece::EMPTY;
+        continue;
       }
-      if (rank == 7 && file == 7)
-        dumped = true;
 
       double best_match = 1e9; // SQDIFF is lower-is-better
       Piece best_piece = Piece::EMPTY;
+
+      // Apply blur to square
+      cv::Mat square_blur;
+      cv::GaussianBlur(square_img, square_blur, cv::Size(3, 3), 0);
 
       // Loop through pieces 1 to 12
       for (int p = 1; p <= 12; p++)
@@ -361,21 +254,16 @@ Board BoardReader::read_board()
         cv::Mat search_mask = mask;
         if (search_templ.cols != square_size_ || search_templ.rows != square_size_)
         {
-          // Use linear interpolation for the BGR template to keep it smooth
           cv::resize(search_templ, search_templ, cv::Size(square_size_, square_size_), 0, 0, cv::INTER_LINEAR);
           if (!search_mask.empty())
           {
             cv::threshold(search_mask, search_mask, 240, 255, cv::THRESH_BINARY);
             cv::resize(search_mask, search_mask, cv::Size(square_size_, square_size_), 0, 0, cv::INTER_NEAREST);
-            // Erode mask slightly so the very edge of the piece doesn't dominate the difference
             cv::erode(search_mask, search_mask, cv::Mat(), cv::Point(-1, -1), 1);
           }
         }
 
-        // Apply a slight blur to both the square and the template.
-        // This makes the SQDIFF incredibly robust to 1-2 pixel misalignments and anti-aliasing artifacts!
-        cv::Mat square_blur, templ_blur;
-        cv::GaussianBlur(square_img, square_blur, cv::Size(3, 3), 0);
+        cv::Mat templ_blur;
         cv::GaussianBlur(search_templ, templ_blur, cv::Size(3, 3), 0);
 
         cv::Mat result;
@@ -393,8 +281,6 @@ Board BoardReader::read_board()
         double minVal, maxVal;
         cv::minMaxLoc(result, &minVal, &maxVal);
 
-        // A blurred template match with an eroded mask is very stable.
-        // Real pieces will score < 0.15. Empty squares will score > 0.30.
         if (minVal < best_match)
         {
           best_match = minVal;
@@ -402,23 +288,36 @@ Board BoardReader::read_board()
         }
       }
 
-      if (best_match < 0.25)
+      // Now compare against the EMPTY template for this square's color
+      bool is_dark = ((rank + file) % 2 == 0);
+      cv::Mat empty_templ = is_dark ? empty_dark_templ_ : empty_light_templ_;
+
+      if (!empty_templ.empty())
       {
-        board[rank][file] = best_piece;
-      }
-      else
-      {
-        if (best_match < 0.6)
+        cv::Mat search_empty = empty_templ;
+        if (search_empty.cols != square_size_ || search_empty.rows != square_size_)
         {
-          // We expect empty squares to score around 0.30 - 0.50.
-          // If they score under 0.25, they get incorrectly marked as pieces.
-          printf(
-              "[ChessBot][BoardReader] Square (%d, %d) was borderline empty with SQDIFF %.2f for piece %d\n", rank, file, best_match,
-              (int)best_piece
-          );
+          cv::resize(search_empty, search_empty, cv::Size(square_size_, square_size_), 0, 0, cv::INTER_LINEAR);
         }
-        board[rank][file] = Piece::EMPTY;
+
+        cv::Mat empty_blur;
+        cv::GaussianBlur(search_empty, empty_blur, cv::Size(3, 3), 0);
+
+        cv::Mat result_empty;
+        cv::matchTemplate(square_blur, empty_blur, result_empty, cv::TM_SQDIFF_NORMED);
+
+        double emptyMin, emptyMax;
+        cv::minMaxLoc(result_empty, &emptyMin, &emptyMax);
+
+        // If the square looks more like an empty square than any piece, it's empty!
+        if (emptyMin < best_match)
+        {
+          best_match = emptyMin;
+          best_piece = Piece::EMPTY;
+        }
       }
+
+      board[rank][file] = best_piece;
     }
   }
 

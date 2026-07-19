@@ -106,7 +106,6 @@ bool GameState::update(const Board &detected_board)
     {
       // Apply the move to our tracked board
       apply_move(last_move_);
-      move_history_.push_back(last_move_);
 
       printf("[ChessBot][GameState] Move detected: %s (FEN: %s)\n", last_move_.c_str(), to_fen().c_str());
 
@@ -188,38 +187,44 @@ std::string GameState::detect_move(const Board &old_board, const Board &new_boar
     return square_to_uci(emptied[0].first, emptied[0].second) + square_to_uci(changed[0].first, changed[0].second);
   }
 
-  // Castling: two emptied (king + rook), two filled (king + rook new positions)
-  if (emptied.size() == 2 && filled.size() == 2)
+  // Castling: (Full animation) two emptied (king + rook), two filled (king + rook new positions)
+  // Or (Mid animation): King emptied, King filled/changed, Rook emptied/filled partially
+  if (emptied.size() >= 1)
   {
-    // King-side or queen-side castling
-    // Check if one of the emptied squares had a king
     for (auto &e : emptied)
     {
       Piece p = old_board[e.second][e.first];
       if (p == Piece::WHITE_KING || p == Piece::BLACK_KING)
       {
-        // Find where the king went
+        // Check if the King moved 2 squares (Castling)
         for (auto &fl : filled)
         {
-          // King moves two squares for castling
           if (fl.second == e.second && std::abs(fl.first - e.first) == 2)
-          {
             return square_to_uci(e.first, e.second) + square_to_uci(fl.first, fl.second);
-          }
         }
-        // Regular king move to any filled square
-        for (auto &fl : filled)
+        for (auto &ch : changed)
         {
-          if (fl.second == e.second || std::abs(fl.second - e.second) <= 1)
+          if (ch.second == e.second && std::abs(ch.first - e.first) == 2)
+            return square_to_uci(e.first, e.second) + square_to_uci(ch.first, ch.second);
+        }
+
+        // If it's a full 2-2 castling but the king didn't move 2 squares (impossible logically, but as a fallback for standard King moves)
+        if (emptied.size() == 2 && filled.size() == 2)
+        {
+          for (auto &fl : filled)
           {
-            return square_to_uci(e.first, e.second) + square_to_uci(fl.first, fl.second);
+            if (fl.second == e.second || std::abs(fl.second - e.second) <= 1)
+              return square_to_uci(e.first, e.second) + square_to_uci(fl.first, fl.second);
           }
         }
       }
     }
 
-    // Fallback: first emptied → first filled
-    return square_to_uci(emptied[0].first, emptied[0].second) + square_to_uci(filled[0].first, filled[0].second);
+    if (emptied.size() == 2 && filled.size() == 2)
+    {
+      // Fallback: first emptied → first filled
+      return square_to_uci(emptied[0].first, emptied[0].second) + square_to_uci(filled[0].first, filled[0].second);
+    }
   }
 
   // En passant: two emptied (pawn + captured pawn), one filled
@@ -270,6 +275,11 @@ void GameState::apply_move(const std::string &uci_move)
     return;
 
   Piece moving = board_[from_rank][from_file];
+  if (moving == Piece::EMPTY)
+  {
+    printf("[ChessBot][GameState] WARNING: Attempted to move an empty square! (%s). Ignoring.\n", uci_move.c_str());
+    return;
+  }
 
   // Handle castling
   if ((moving == Piece::WHITE_KING || moving == Piece::BLACK_KING) && std::abs(to_file - from_file) == 2)
@@ -347,6 +357,8 @@ void GameState::apply_move(const std::string &uci_move)
   white_to_move_ = !white_to_move_;
   if (white_to_move_)
     fullmove_number_++;
+
+  move_history_.push_back(uci_move);
 }
 
 void GameState::update_castling(const std::string &move)

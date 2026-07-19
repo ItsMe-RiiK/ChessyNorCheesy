@@ -11,8 +11,8 @@ static std::mt19937 &get_bot_rng()
 }
 
 BotController::BotController() :
-    board_reader_(capture_, theme_manager_), running_(false), should_stop_(false), stockfish_depth_(20), move_delay_min_ms_(200),
-    move_delay_max_ms_(800), poll_interval_ms_(200)
+    board_reader_(capture_, theme_manager_), running_(false), should_stop_(false), stockfish_depth_(20), move_delay_min_ms_(800),
+    move_delay_max_ms_(1500), poll_interval_ms_(200)
 {
 }
 
@@ -51,9 +51,6 @@ bool BotController::init()
   stockfish_.set_threads(4);
   stockfish_.set_hash(256);
 
-  // Initialize HTTP Server
-  http_server_.start(8080);
-
   set_status("Ready. Auto-Detect or Calibrate to begin.");
   printf("[ChessBot] All systems initialized.\n");
 
@@ -63,7 +60,6 @@ bool BotController::init()
 void BotController::cleanup()
 {
   stop();
-  http_server_.stop();
   stockfish_.stop();
   mouse_.close();
   capture_.cleanup();
@@ -116,12 +112,30 @@ void BotController::calibrate(int tl_x, int tl_y, int br_x, int br_y)
   if (!theme_manager_.load_default_config(b, p))
   {
     auto pieces = theme_manager_.get_available_pieces();
+    // Prefer 'neo' theme as it is the chess.com default
+    bool found_neo = false;
     for (const auto &candidate : pieces)
     {
-      if (theme_manager_.load_piece_theme(candidate))
+      if (candidate == "neo")
       {
-        p = candidate;
-        break;
+        if (theme_manager_.load_piece_theme(candidate))
+        {
+          p = candidate;
+          found_neo = true;
+          break;
+        }
+      }
+    }
+    // Fallback to first available if 'neo' not found
+    if (!found_neo)
+    {
+      for (const auto &candidate : pieces)
+      {
+        if (theme_manager_.load_piece_theme(candidate))
+        {
+          p = candidate;
+          break;
+        }
       }
     }
   }
@@ -130,22 +144,16 @@ void BotController::calibrate(int tl_x, int tl_y, int br_x, int br_y)
     theme_manager_.load_piece_theme(p);
   }
 
+  // Extract initial templates immediately while the board is (presumably) in the starting position!
+  board_reader_.read_board();
+
   set_status("Board calibrated manually! Ready to start.");
 }
 
-bool BotController::auto_calibrate()
+void BotController::reset_game()
 {
-  std::string board_theme, piece_theme;
-  if (board_reader_.auto_calibrate(board_theme, piece_theme))
-  {
-    game_state_.reset();
-    std::string msg = "Board Auto-Detected! [Board: " + board_theme + " | Pieces: " + piece_theme + "]";
-    set_status(msg);
-    return true;
-  }
-
-  set_status("ERROR: Auto-Detect failed. Ensure board is visible and themes exist.");
-  return false;
+  game_state_.reset();
+  board_reader_.clear_empty_templates();
 }
 
 bool BotController::is_calibrated() const
@@ -185,6 +193,11 @@ std::string BotController::get_last_move() const
   return game_state_.get_last_move();
 }
 
+std::string BotController::get_move_history() const
+{
+  return game_state_.get_move_history();
+}
+
 std::string BotController::get_engine_eval() const
 {
   return engine_eval_;
@@ -222,86 +235,16 @@ void BotController::bot_loop()
 
   while (!should_stop_)
   {
-    // Wait for FEN updates from HTTP server
-    if (http_server_.has_new_fen())
+    // Capture board state visually
+    Board detected_board = board_reader_.read_board();
+    bool changed = game_state_.update(detected_board);
+
+    if (changed)
     {
-      std::string fen = http_server_.pop_fen();
-      printf("[ChessBot][HTTP] Received FEN: %s\n", fen.c_str());
-
-      // Parse FEN into a Board object
-      Board detected_board;
-      for (auto &row : detected_board)
-        row.fill(Piece::EMPTY);
-
-      int r = 7, f = 0;
-      for (char c : fen)
+      std::string new_fen = game_state_.to_fen();
+      if (on_move_made)
       {
-        if (c == ' ')
-          break; // Only care about piece placement
-        if (c == '/')
-        {
-          r--;
-          f = 0;
-        }
-        else if (isdigit(c))
-        {
-          f += (c - '0');
-        }
-        else
-        {
-          Piece p = Piece::EMPTY;
-          switch (c)
-          {
-          case 'P':
-            p = Piece::WHITE_PAWN;
-            break;
-          case 'N':
-            p = Piece::WHITE_KNIGHT;
-            break;
-          case 'B':
-            p = Piece::WHITE_BISHOP;
-            break;
-          case 'R':
-            p = Piece::WHITE_ROOK;
-            break;
-          case 'Q':
-            p = Piece::WHITE_QUEEN;
-            break;
-          case 'K':
-            p = Piece::WHITE_KING;
-            break;
-          case 'p':
-            p = Piece::BLACK_PAWN;
-            break;
-          case 'n':
-            p = Piece::BLACK_KNIGHT;
-            break;
-          case 'b':
-            p = Piece::BLACK_BISHOP;
-            break;
-          case 'r':
-            p = Piece::BLACK_ROOK;
-            break;
-          case 'q':
-            p = Piece::BLACK_QUEEN;
-            break;
-          case 'k':
-            p = Piece::BLACK_KING;
-            break;
-          }
-          if (r >= 0 && r < 8 && f >= 0 && f < 8)
-            detected_board[r][f] = p;
-          f++;
-        }
-      }
-
-      bool changed = game_state_.update(detected_board);
-
-      if (changed)
-      {
-        std::string new_fen = game_state_.to_fen();
-        if (on_fen_update)
-          on_fen_update(new_fen);
+        on_move_made(game_state_.get_last_move());
       }
     }
 
@@ -322,6 +265,14 @@ void BotController::bot_loop()
         set_status("ERROR: Board missing kings! FEN: " + fen);
         std::this_thread::sleep_for(std::chrono::seconds(2));
         continue;
+      }
+
+      // Ensure Stockfish is still running
+      if (!stockfish_.is_running())
+      {
+        set_status("ERROR: Stockfish engine died. Restarting...");
+        stockfish_.start("/usr/bin/stockfish");
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
       }
 
       // Query Stockfish
@@ -366,6 +317,11 @@ void BotController::bot_loop()
         on_move_made(best_move);
 
       set_status("Waiting for opponent...");
+
+      // Wait for our own move animation to finish completely before scanning the board again.
+      // If we scan during our own animation, the vision system might track our piece mid-air,
+      // which causes GameState to think the opponent moved our piece backwards!
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 
     // 4. Sleep before next poll
@@ -393,9 +349,13 @@ bool BotController::execute_move(const std::string &uci_move)
 
   printf("[ChessBot] Move %s: click (%d,%d) → (%d,%d)\n", uci_move.c_str(), from_x, from_y, to_x, to_y);
 
-  // Drag from source square to destination square
+  // Drag the piece from source to destination. This works across all chess.com move methods.
   if (!mouse_.drag(from_x, from_y, to_x, to_y))
     return false;
+
+  // We purposefully do NOT move the mouse to the corner (e.g. 10, 10)
+  // because Linux desktop environments (like Cinnamon) have "Hot Corners"
+  // that will trigger window overviews and break the computer vision!
 
   // Handle pawn promotion
   if (uci_move.size() == 5)
@@ -403,6 +363,12 @@ bool BotController::execute_move(const std::string &uci_move)
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
     click_promotion(uci_move[4]);
   }
+
+  // Move the mouse off the board so it doesn't obscure the piece from OpenCV!
+  // We park it just to the RIGHT of the board to avoid Cinnamon top-left "Hot Corners" and negative coordinates.
+  int park_x, park_y;
+  board_reader_.get_square_center(7, 4, park_x, park_y); // file 7 is the right-most file
+  mouse_.move_to(park_x + (board_reader_.get_square_size() * 2), park_y);
 
   return true;
 }

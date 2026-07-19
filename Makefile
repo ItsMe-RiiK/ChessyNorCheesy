@@ -1,14 +1,7 @@
 CXX := g++
 CXXFLAGS := -std=c++17 -O2 -Wall -Wextra -Wno-unused-parameter
-# Dynamically detect if we are inside the KernelDriver monorepo or standalone
-ifneq ($(wildcard ../../src/main.c),)
-    # Monorepo mode
-    ROOT_DIR := $(abspath ../..)
-    RELEASE_DIR := $(ROOT_DIR)/release
-else
-    # Standalone submodule mode
-    RELEASE_DIR := release
-endif
+# Always build to local release folder
+RELEASE_DIR := release
 SRC_DIR := src
 BUILD_DIR := build
 TARGET := $(RELEASE_DIR)/ChessBot
@@ -16,15 +9,13 @@ TARGET := $(RELEASE_DIR)/ChessBot
 # Source files
 SRCS := $(SRC_DIR)/main.cpp \
         $(SRC_DIR)/driver/mouse.cpp \
-        $(SRC_DIR)/driver/keyboard.cpp \
-        $(SRC_DIR)/driver/screen.cpp \
         $(SRC_DIR)/capture/screen_capture.cpp \
         $(SRC_DIR)/capture/theme_manager.cpp \
         $(SRC_DIR)/chess/board_reader.cpp \
         $(SRC_DIR)/chess/stockfish.cpp \
         $(SRC_DIR)/chess/game_state.cpp \
         $(SRC_DIR)/bot/bot_controller.cpp \
-        $(SRC_DIR)/bot/http_server.cpp
+        $(SRC_DIR)/gui/gui.cpp
 
 OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
 

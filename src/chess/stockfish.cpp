@@ -51,7 +51,7 @@ bool StockfishEngine::start(const std::string &path)
     close(to_engine[0]);
     close(from_engine[1]);
 
-    execlp(path.c_str(), path.c_str(), nullptr);
+    execlp("nice", "nice", "-n", "19", path.c_str(), nullptr);
 
     // If execlp returns, it failed
     perror("[ChessBot][Stockfish] execlp failed");
@@ -78,6 +78,10 @@ bool StockfishEngine::start(const std::string &path)
 
   // Read the id lines for engine info
   printf("[ChessBot][Stockfish] Engine started successfully.\n");
+
+  // Force minimum CPU usage (1 thread, lowest hash, so it doesn't freeze dual-cores)
+  send_command("setoption name Threads value 1");
+  send_command("setoption name Hash value 16");
 
   // Send isready to ensure engine is fully initialized
   send_command("isready");
@@ -174,18 +178,16 @@ std::string StockfishEngine::read_line()
 
   std::string line;
   char c;
-
-  while (true)
+  int res;
+  while ((res = read(from_engine_fd_, &c, 1)) == 1)
   {
-    ssize_t n = read(from_engine_fd_, &c, 1);
-    if (n <= 0)
-      break;
     if (c == '\n')
       break;
     if (c != '\r')
       line += c;
   }
-
+  if (res <= 0 && line.empty())
+    return "<EOF>";
   return line;
 }
 
@@ -215,6 +217,9 @@ std::string StockfishEngine::wait_for(const std::string &prefix, int timeout_ms)
 
     std::string line = read_line();
 
+    if (line == "<EOF>")
+      return "";
+
     if (line.empty())
       continue;
 
@@ -240,6 +245,11 @@ std::string StockfishEngine::wait_for(const std::string &prefix, int timeout_ms)
 
 bool StockfishEngine::set_position(const std::string &fen)
 {
+  // Stop any ongoing search before setting a new position
+  send_command("stop");
+  send_command("isready");
+  wait_for("readyok", 5000);
+
   std::string cmd = "position fen " + fen;
   if (!send_command(cmd))
     return false;
@@ -252,6 +262,11 @@ bool StockfishEngine::set_position(const std::string &fen)
 
 bool StockfishEngine::set_position_moves(const std::string &moves)
 {
+  // Stop any ongoing search before setting a new position
+  send_command("stop");
+  send_command("isready");
+  wait_for("readyok", 5000);
+
   std::string cmd = "position startpos";
   if (!moves.empty())
   {
@@ -276,7 +291,15 @@ std::string StockfishEngine::get_best_move(int depth)
   std::string response = wait_for("bestmove", 60000); // 60s timeout for deep search
 
   if (response.empty())
-    return "";
+  {
+    // Timeout reached. Tell Stockfish to stop searching and return best move so far.
+    send_command("stop");
+    response = wait_for("bestmove", 5000);
+
+    // If it STILL returns empty, the engine is completely dead or stuck.
+    if (response.empty())
+      return "";
+  }
 
   // Parse "bestmove e2e4 ponder e7e5"
   std::istringstream iss(response);
