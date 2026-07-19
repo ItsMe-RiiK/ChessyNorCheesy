@@ -18,7 +18,7 @@ Unlike traditional chess bots or extensions that inject JavaScript, read browser
 - **Built-in GTK3 GUI**:
   - Real-time PGN generation and tracking.
   - Live engine evaluation (e.g. `eval: +1.20`).
-  - Adjustable Stockfish calculation depth (defaults to 12).
+  - Adjustable Stockfish calculation depth (defaults to 5).
   - Configurable artificial delay between moves to mimic human thinking time.
   - Global Hotkeys: `` ` `` to start/stop, `c` to calibrate, `r` to instantly reset game memory, `1` for White, `2` for Black.
 - **Robust State Engine**: Handles move parsing and en-passant/castling rules without relying on algebraic notation parsing from the website.
