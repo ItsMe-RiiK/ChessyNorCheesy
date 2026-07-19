@@ -6,14 +6,13 @@
 
 **ChessyNotCheesy** is a highly optimized, fully autonomous computer-vision based chess bot designed to play chess on Chess.com directly from your Linux desktop, using the powerful Stockfish engine.
 
-Unlike traditional chess bots or extensions that inject JavaScript, read browser memory, or hook into the DOM, **ChessyNotCheesy operates entirely outside the browser**. It works exactly like a human player: it "looks" at your screen using X11 screen capture, and it "clicks" the mouse using hardware-level input simulation (`XTest`). Because it never interacts with the browser internally, it is virtually invisible to standard web-based anti-cheat mechanisms.
+Unlike traditional chess bots or extensions that inject JavaScript, read browser memory, or hook into the DOM, **ChessyNotCheesy operates entirely outside the browser**. It works exactly like a human player: it "looks" at your screen using X11 screen capture, and it "clicks" the mouse using hardware-level input simulation (`XTest`).
 
 ---
 
 ## ✨ Features
 
 - **100% External Vision System**: Uses OpenCV `TM_SQDIFF_NORMED` template matching to read the board visually. It is completely immune to board highlights, last-move indicators, and square colors.
-- **Ultra-Low CPU Usage**: Heavily optimized C++17 implementation. Template processing is cached, reducing computer vision CPU overhead by 98% compared to naive scanning. The bot idles at nearly 0% CPU while playing.
 - **Human-like Interaction**: Uses `XTestFakeMotionEvent` and `XTestFakeButtonEvent` to simulate real mouse movements and clicks.
 - **Built-in GTK3 GUI**:
   - Real-time PGN generation and tracking.
