@@ -86,4 +86,4 @@ This project was inspired by the concept of a chess bot that operates entirely o
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](License) file for details.
+This project is licensed under the GPL-3.0 License - see the [LICENSE](License) file for details.
