@@ -44,6 +44,7 @@ bool ThemeManager::load_piece_theme(const std::string &piece_name)
     }
     else
     {
+      printf("[ThemeManager] Loaded %s with %d channels\n", kv.second.c_str(), img.channels());
       if (img.channels() == 4)
       {
         std::vector<cv::Mat> channels;
@@ -89,8 +90,15 @@ bool ThemeManager::load_default_config(std::string &out_board_name, std::string 
   if (!in.is_open())
     return false;
 
-  if (std::getline(in, out_board_name) && std::getline(in, out_piece_name))
+  std::string line1, line2;
+  if (std::getline(in, line1) && std::getline(in, line2))
   {
+    // Extract first word from each line (ignoring comments)
+    std::stringstream ss1(line1);
+    ss1 >> out_board_name;
+
+    std::stringstream ss2(line2);
+    ss2 >> out_piece_name;
     return true;
   }
   return false;

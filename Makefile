@@ -4,7 +4,7 @@ CXXFLAGS := -std=c++17 -O2 -Wall -Wextra -Wno-unused-parameter
 RELEASE_DIR := release
 SRC_DIR := src
 BUILD_DIR := build
-TARGET := $(RELEASE_DIR)/ChessBot
+TARGET := $(RELEASE_DIR)/ChessyNotCheesy
 
 # Source files
 SRCS := $(SRC_DIR)/main.cpp \

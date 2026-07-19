@@ -32,11 +32,11 @@ bool X11Mouse::open()
   display_ = XOpenDisplay(nullptr);
   if (!display_)
   {
-    fprintf(stderr, "[ChessBot][Mouse] Failed to open X11 display\n");
+    fprintf(stderr, "[Mouse] Failed to open X11 display\n");
     return false;
   }
 
-  printf("[ChessBot][Mouse] X11 Display opened successfully.\n");
+  printf("[Mouse] X11 Display opened successfully.\n");
   return true;
 }
 

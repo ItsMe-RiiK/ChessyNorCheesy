@@ -107,15 +107,15 @@ bool GameState::update(const Board &detected_board)
       // Apply the move to our tracked board
       apply_move(last_move_);
 
-      printf("[ChessBot][GameState] Move detected: %s (FEN: %s)\n", last_move_.c_str(), to_fen().c_str());
+      printf("[GameState] Move detected: %s (FEN: %s)\n", last_move_.c_str(), to_fen().c_str());
 
       board_changed_ = true;
     }
     else
     {
       // Could not isolate a single move
-      printf("[ChessBot][GameState] ERROR: Move detection failed! The board changed, but no valid move was found.\n");
-      printf("[ChessBot][GameState] Emptied or filled squares were ambiguous.\n");
+      printf("[GameState] ERROR: Move detection failed! The board changed, but no valid move was found.\n");
+      printf("[GameState] Emptied or filled squares were ambiguous.\n");
       // Do not update board_, we will try again next tick
       board_changed_ = false;
     }
@@ -166,7 +166,7 @@ std::string GameState::detect_move(const Board &old_board, const Board &new_boar
   // DEBUG PRINT
   if (!emptied.empty() || !filled.empty() || !changed.empty())
   {
-    printf("[ChessBot][GameState] Debug: emptied=%zu, filled=%zu, changed=%zu\n", emptied.size(), filled.size(), changed.size());
+    printf("[GameState] Debug: emptied=%zu, filled=%zu, changed=%zu\n", emptied.size(), filled.size(), changed.size());
     for (auto &sq : emptied)
       printf("  Emptied: %s\n", square_to_uci(sq.first, sq.second).c_str());
     for (auto &sq : filled)
@@ -250,8 +250,7 @@ std::string GameState::detect_move(const Board &old_board, const Board &new_boar
     if (emptied.size() + filled.size() + changed.size() > 6)
     {
       printf(
-          "[ChessBot][GameState] Vision unstable (too many changed squares: %zu). Ignoring frame.\n",
-          emptied.size() + filled.size() + changed.size()
+          "[GameState] Vision unstable (too many changed squares: %zu). Ignoring frame.\n", emptied.size() + filled.size() + changed.size()
       );
       return "";
     }
@@ -277,7 +276,7 @@ void GameState::apply_move(const std::string &uci_move)
   Piece moving = board_[from_rank][from_file];
   if (moving == Piece::EMPTY)
   {
-    printf("[ChessBot][GameState] WARNING: Attempted to move an empty square! (%s). Ignoring.\n", uci_move.c_str());
+    printf("[GameState] WARNING: Attempted to move an empty square! (%s). Ignoring.\n", uci_move.c_str());
     return;
   }
 

@@ -26,7 +26,7 @@ bool StockfishEngine::start(const std::string &path)
 
   if (pipe(to_engine) < 0 || pipe(from_engine) < 0)
   {
-    perror("[ChessBot][Stockfish] pipe() failed");
+    perror("[Stockfish] pipe() failed");
     return false;
   }
 
@@ -34,7 +34,7 @@ bool StockfishEngine::start(const std::string &path)
 
   if (child_pid_ < 0)
   {
-    perror("[ChessBot][Stockfish] fork() failed");
+    perror("[Stockfish] fork() failed");
     return false;
   }
 
@@ -54,7 +54,7 @@ bool StockfishEngine::start(const std::string &path)
     execlp("nice", "nice", "-n", "19", path.c_str(), nullptr);
 
     // If execlp returns, it failed
-    perror("[ChessBot][Stockfish] execlp failed");
+    perror("[Stockfish] execlp failed");
     _exit(1);
   }
 
@@ -71,13 +71,13 @@ bool StockfishEngine::start(const std::string &path)
 
   if (response.empty())
   {
-    fprintf(stderr, "[ChessBot][Stockfish] Engine did not respond with 'uciok'\n");
+    fprintf(stderr, "[Stockfish] Engine did not respond with 'uciok'\n");
     stop();
     return false;
   }
 
   // Read the id lines for engine info
-  printf("[ChessBot][Stockfish] Engine started successfully.\n");
+  printf("[Stockfish] Engine started successfully.\n");
 
   // Force minimum CPU usage (1 thread, lowest hash, so it doesn't freeze dual-cores)
   send_command("setoption name Threads value 1");
@@ -143,7 +143,7 @@ bool StockfishEngine::send_command(const std::string &cmd)
     pid_t result = waitpid(child_pid_, &status, WNOHANG);
     if (result != 0)
     {
-      fprintf(stderr, "[ChessBot][Stockfish] Engine process died unexpectedly");
+      fprintf(stderr, "[Stockfish] Engine process died unexpectedly");
       if (result > 0 && WIFEXITED(status))
         fprintf(stderr, " (exit code: %d)", WEXITSTATUS(status));
       else if (result > 0 && WIFSIGNALED(status))
@@ -164,7 +164,7 @@ bool StockfishEngine::send_command(const std::string &cmd)
 
   if (written != (ssize_t)line.size())
   {
-    perror("[ChessBot][Stockfish] Failed to send command");
+    perror("[Stockfish] Failed to send command");
     return false;
   }
 

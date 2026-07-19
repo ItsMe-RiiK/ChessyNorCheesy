@@ -1,5 +1,5 @@
-#ifndef CHESSBOT_SCREEN_CAPTURE_H
-#define CHESSBOT_SCREEN_CAPTURE_H
+#ifndef ChessyNotCheesy_SCREEN_CAPTURE_H
+#define ChessyNotCheesy_SCREEN_CAPTURE_H
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -77,4 +77,4 @@ private:
   bool alloc_shm(int width, int height);
 };
 
-#endif /* CHESSBOT_SCREEN_CAPTURE_H */
+#endif /* ChessyNotCheesy_SCREEN_CAPTURE_H */

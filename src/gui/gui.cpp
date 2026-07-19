@@ -73,15 +73,18 @@ static gboolean update_move_idle(gpointer data)
 
     g_ply_count++;
     std::string text;
+    char buf[64];
     if (g_ply_count % 2 == 1)
     {
       // White's move
-      text = std::to_string((g_ply_count + 1) / 2) + ". " + upd->text + " ";
+      snprintf(buf, sizeof(buf), "%3d. %-7s ", (g_ply_count + 1) / 2, upd->text.c_str());
+      text = buf;
     }
     else
     {
       // Black's move
-      text = upd->text + "\n";
+      snprintf(buf, sizeof(buf), "%-7s\n", upd->text.c_str());
+      text = buf;
     }
 
     gtk_text_buffer_insert(pgn_buffer, &iter, text.c_str(), -1);
@@ -112,6 +115,29 @@ static gboolean update_color_combo_idle(gpointer data)
 {
   bool is_white = (bool)(intptr_t)data;
   gtk_combo_box_set_active(GTK_COMBO_BOX(color_combo), is_white ? 0 : 1);
+  return G_SOURCE_REMOVE;
+}
+
+static gboolean reset_game_idle(gpointer data)
+{
+  if (g_bot)
+  {
+    bot.reset_game();
+    bot.set_status("Game memory reset to starting position.");
+    g_ply_count = 0;
+    if (pgn_buffer)
+    {
+      gtk_text_buffer_set_text(pgn_buffer, "", -1);
+    }
+  }
+  return G_SOURCE_REMOVE;
+}
+
+static void on_calibrate_clicked(GtkWidget *widget, gpointer data);
+
+static gboolean calibrate_idle(gpointer data)
+{
+  on_calibrate_clicked(calibrate_btn, NULL);
   return G_SOURCE_REMOVE;
 }
 
@@ -254,6 +280,18 @@ static void input_listener_thread()
           g_idle_add(update_color_combo_idle, (gpointer)(intptr_t)false);
         }
 
+        // Hotkey: R for Reset Game
+        if (ev.type == EV_KEY && ev.code == KEY_R && ev.value == 1)
+        {
+          g_idle_add(reset_game_idle, NULL);
+        }
+
+        // Hotkey: C for Calibrate
+        if (ev.type == EV_KEY && ev.code == KEY_C && ev.value == 1)
+        {
+          g_idle_add(calibrate_idle, NULL);
+        }
+
         // Calibration click detection (real mouse click, not virtual)
         if (ev.type == EV_KEY && ev.code == BTN_LEFT && ev.value == 1)
         {
@@ -301,7 +339,7 @@ static void input_listener_thread()
                 g_idle_add(
                     +[](gpointer data) -> gboolean
                     {
-                      gtk_button_set_label(GTK_BUTTON(calibrate_btn), "🎯 Calibrate Board");
+                      gtk_button_set_label(GTK_BUTTON(calibrate_btn), "🎯 (C)alibrate Board");
                       return G_SOURCE_REMOVE;
                     },
                     NULL
@@ -468,7 +506,7 @@ static void activate(GtkApplication *app, gpointer user_data)
   GError *error = NULL;
   if (!gtk_window_set_icon_from_file(GTK_WINDOW(window), "images/Icon_256.png", &error))
   {
-    fprintf(stderr, "[ChessBot][GUI] Warning: Could not load icon: %s\n", error->message);
+    fprintf(stderr, "[GUI] Warning: Could not load icon: %s\n", error->message);
     g_error_free(error);
   }
 
@@ -484,34 +522,19 @@ static void activate(GtkApplication *app, gpointer user_data)
   // ── Top Bar ──
   GtkWidget *top_check = gtk_check_button_new_with_label("Always on Top");
   g_signal_connect(top_check, "toggled", G_CALLBACK(on_always_on_top_toggled), window);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(top_check), TRUE);
   gtk_widget_set_halign(top_check, GTK_ALIGN_CENTER);
   gtk_box_pack_start(GTK_BOX(vbox), top_check, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 4);
 
-  // ── Auto-Detect / Calibration ──
-  calibrate_btn = gtk_button_new_with_label("🎯 Manual Calibration");
+  // Calibration ──
+  calibrate_btn = gtk_button_new_with_label("🎯 (C)alibrate");
   g_signal_connect(calibrate_btn, "clicked", G_CALLBACK(on_calibrate_clicked), NULL);
   gtk_box_pack_start(GTK_BOX(vbox), calibrate_btn, FALSE, FALSE, 0);
 
-  GtkWidget *reset_btn = gtk_button_new_with_label("🔄 Reset Game");
-  g_signal_connect(
-      reset_btn, "clicked",
-      G_CALLBACK(+[](GtkWidget *widget, gpointer data)
-                 {
-                   if (g_bot)
-                   {
-                     bot.reset_game();
-                     bot.set_status("Game memory reset to starting position.");
-                     g_ply_count = 0;
-                     if (pgn_buffer)
-                     {
-                       gtk_text_buffer_set_text(pgn_buffer, "", -1);
-                     }
-                   }
-                 }),
-      NULL
-  );
+  GtkWidget *reset_btn = gtk_button_new_with_label("🔄 (R)eset Game");
+  g_signal_connect(reset_btn, "clicked", G_CALLBACK(+[](GtkWidget *widget, gpointer data) { g_idle_add(reset_game_idle, NULL); }), NULL);
   gtk_box_pack_start(GTK_BOX(vbox), reset_btn, FALSE, FALSE, 0);
 
   // ── Color Selector ──
@@ -538,7 +561,7 @@ static void activate(GtkApplication *app, gpointer user_data)
 
   gtk_box_pack_start(GTK_BOX(depth_hbox), create_label("Depth:", NULL), FALSE, FALSE, 0);
 
-  GtkAdjustment *depth_adj = gtk_adjustment_new(20.0, 1.0, 30.0, 1.0, 5.0, 0.0);
+  GtkAdjustment *depth_adj = gtk_adjustment_new(12.0, 1.0, 30.0, 1.0, 5.0, 0.0);
   depth_scale = gtk_scale_new(GTK_ORIENTATION_HORIZONTAL, depth_adj);
   gtk_scale_set_digits(GTK_SCALE(depth_scale), 0);
   gtk_scale_set_value_pos(GTK_SCALE(depth_scale), GTK_POS_RIGHT);
@@ -656,7 +679,7 @@ int run_gui(int argc, char **argv, BotController &bot_ref, std::atomic<bool> &bo
   input_thread.detach();
 
   // Launch GTK application
-  GtkApplication *app = gtk_application_new("org.riik.chessbot", G_APPLICATION_NON_UNIQUE);
+  GtkApplication *app = gtk_application_new("org.riik.ChessyNotCheesy", G_APPLICATION_NON_UNIQUE);
   g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
   int status = g_application_run(G_APPLICATION(app), argc, argv);
   g_object_unref(app);

@@ -1,5 +1,5 @@
-#ifndef CHESSBOT_MOUSE_H
-#define CHESSBOT_MOUSE_H
+#ifndef ChessyNotCheesy_MOUSE_H
+#define ChessyNotCheesy_MOUSE_H
 
 #include <X11/Xlib.h>
 #include <cstdint>
@@ -54,4 +54,4 @@ private:
   void random_delay(int min_ms, int max_ms);
 };
 
-#endif /* CHESSBOT_MOUSE_H */
+#endif /* ChessyNotCheesy_MOUSE_H */

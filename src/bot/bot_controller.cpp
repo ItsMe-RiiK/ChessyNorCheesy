@@ -51,8 +51,12 @@ bool BotController::init()
   stockfish_.set_threads(4);
   stockfish_.set_hash(256);
 
-  set_status("Ready. Auto-Detect or Calibrate to begin.");
-  printf("[ChessBot] All systems initialized.\n");
+  // Load user's preferred themes since the GUI selectors were removed
+  theme_manager_.load_board_theme("wood");
+  theme_manager_.load_piece_theme("neo");
+
+  set_status("Ready. Calibrate to begin.");
+  printf("[ChessyNotCheesy] All systems initialized.\n");
 
   return true;
 }
@@ -153,7 +157,6 @@ void BotController::calibrate(int tl_x, int tl_y, int br_x, int br_y)
 void BotController::reset_game()
 {
   game_state_.reset();
-  board_reader_.clear_empty_templates();
 }
 
 bool BotController::is_calibrated() const
@@ -216,7 +219,7 @@ int BotController::get_stockfish_depth() const
 void BotController::set_status(const std::string &status)
 {
   current_status_ = status;
-  printf("[ChessBot] %s\n", status.c_str());
+  printf("[ChessyNotCheesy] %s\n", status.c_str());
 
   if (on_status_change)
     on_status_change(status);
@@ -231,7 +234,7 @@ void BotController::human_delay()
 
 void BotController::bot_loop()
 {
-  printf("[ChessBot] Bot loop started.\n");
+  printf("[ChessyNotCheesy] Bot loop started.\n");
 
   while (!should_stop_)
   {
@@ -328,7 +331,7 @@ void BotController::bot_loop()
     std::this_thread::sleep_for(std::chrono::milliseconds(poll_interval_ms_));
   }
 
-  printf("[ChessBot] Bot loop ended.\n");
+  printf("[ChessyNotCheesy] Bot loop ended.\n");
 }
 
 bool BotController::execute_move(const std::string &uci_move)
@@ -347,7 +350,7 @@ bool BotController::execute_move(const std::string &uci_move)
   board_reader_.get_square_center(from_file, from_rank, from_x, from_y);
   board_reader_.get_square_center(to_file, to_rank, to_x, to_y);
 
-  printf("[ChessBot] Move %s: click (%d,%d) → (%d,%d)\n", uci_move.c_str(), from_x, from_y, to_x, to_y);
+  printf("[ChessyNotCheesy] Move %s: click (%d,%d) → (%d,%d)\n", uci_move.c_str(), from_x, from_y, to_x, to_y);
 
   // Drag the piece from source to destination. This works across all chess.com move methods.
   if (!mouse_.drag(from_x, from_y, to_x, to_y))

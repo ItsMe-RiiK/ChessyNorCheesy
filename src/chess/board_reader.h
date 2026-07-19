@@ -1,5 +1,5 @@
-#ifndef CHESSBOT_BOARD_READER_H
-#define CHESSBOT_BOARD_READER_H
+#ifndef ChessyNotCheesy_BOARD_READER_H
+#define ChessyNotCheesy_BOARD_READER_H
 
 #include "../capture/screen_capture.h"
 #include "../capture/theme_manager.h"
@@ -70,8 +70,6 @@ public:
   // Calibration callback — set this to receive calibration click coordinates
   std::function<void(int, int)> on_calibration_click;
 
-  void clear_empty_templates();
-
 private:
   ScreenCapture &capture_;
   ThemeManager &theme_manager_;
@@ -84,12 +82,9 @@ private:
   int board_br_x_;
   int board_br_y_;
   int square_size_;
-  cv::Mat empty_light_templ_;
-  cv::Mat empty_dark_templ_;
 
   // OpenCV helper for converting ScreenCapture BGRA buffer to cv::Mat
   cv::Mat capture_to_mat();
-  void extract_empty_templates(const cv::Mat &screen);
 };
 
 #endif

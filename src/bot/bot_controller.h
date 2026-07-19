@@ -1,5 +1,5 @@
-#ifndef CHESSBOT_BOT_CONTROLLER_H
-#define CHESSBOT_BOT_CONTROLLER_H
+#ifndef ChessyNotCheesy_BOT_CONTROLLER_H
+#define ChessyNotCheesy_BOT_CONTROLLER_H
 
 #include "../capture/screen_capture.h"
 #include "../capture/theme_manager.h"
@@ -100,4 +100,4 @@ private:
   void human_delay();
 };
 
-#endif /* CHESSBOT_BOT_CONTROLLER_H */
+#endif /* ChessyNotCheesy_BOT_CONTROLLER_H */

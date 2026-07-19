@@ -20,7 +20,7 @@ bool ScreenCapture::init()
   display_ = XOpenDisplay(nullptr);
   if (!display_)
   {
-    fprintf(stderr, "[ChessBot][Capture] Failed to open X11 display\n");
+    fprintf(stderr, "[Capture] Failed to open X11 display\n");
     return false;
   }
 
@@ -32,13 +32,13 @@ bool ScreenCapture::init()
   // Check XShm extension
   if (!XShmQueryExtension(display_))
   {
-    fprintf(stderr, "[ChessBot][Capture] XShm extension not available\n");
+    fprintf(stderr, "[Capture] XShm extension not available\n");
     XCloseDisplay(display_);
     display_ = nullptr;
     return false;
   }
 
-  printf("[ChessBot][Capture] X11 initialized: %dx%d, XShm available\n", screen_width_, screen_height_);
+  printf("[Capture] X11 initialized: %dx%d, XShm available\n", screen_width_, screen_height_);
 
   return true;
 }
@@ -99,7 +99,7 @@ bool ScreenCapture::alloc_shm(int width, int height)
 
   if (!ximage_)
   {
-    fprintf(stderr, "[ChessBot][Capture] XShmCreateImage failed\n");
+    fprintf(stderr, "Capture] XShmCreateImage failed\n");
     return false;
   }
 
@@ -107,7 +107,7 @@ bool ScreenCapture::alloc_shm(int width, int height)
 
   if (shm_info_.shmid < 0)
   {
-    fprintf(stderr, "[ChessBot][Capture] shmget failed\n");
+    fprintf(stderr, "[Capture] shmget failed\n");
     XDestroyImage(ximage_);
     ximage_ = nullptr;
     return false;
@@ -118,7 +118,7 @@ bool ScreenCapture::alloc_shm(int width, int height)
 
   if (!XShmAttach(display_, &shm_info_))
   {
-    fprintf(stderr, "[ChessBot][Capture] XShmAttach failed\n");
+    fprintf(stderr, "[Capture] XShmAttach failed\n");
     shmdt(shm_info_.shmaddr);
     shmctl(shm_info_.shmid, IPC_RMID, nullptr);
     XDestroyImage(ximage_);
@@ -162,7 +162,7 @@ bool ScreenCapture::capture_region(int x, int y, int width, int height)
 
   if (!XShmGetImage(display_, root_, ximage_, x, y, AllPlanes))
   {
-    fprintf(stderr, "[ChessBot][Capture] XShmGetImage failed\n");
+    fprintf(stderr, "[Capture] XShmGetImage failed\n");
     return false;
   }
 

@@ -1,5 +1,5 @@
-#ifndef CHESSBOT_STOCKFISH_H
-#define CHESSBOT_STOCKFISH_H
+#ifndef ChessyNotCheesy_STOCKFISH_H
+#define ChessyNotCheesy_STOCKFISH_H
 
 #include <string>
 
@@ -73,4 +73,4 @@ private:
   void parse_info_line(const std::string &line);
 };
 
-#endif /* CHESSBOT_STOCKFISH_H */
+#endif /* ChessyNotCheesy_STOCKFISH_H */
