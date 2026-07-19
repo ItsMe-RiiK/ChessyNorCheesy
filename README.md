@@ -62,6 +62,7 @@ cd ChessyNotCheesy
    - Open a game on Chess.com.
    - **Important:** Set your piece style to **Neo** and board style to **Wood** (or update the templates in `themes/pieces/neo` to match your preferred theme).
    - Set move method: drag or click
+   - Set piece animation: slow or medium (Default)
    - Make sure the entire board is visible on your primary monitor without obstruction.
 
 2. **Calibrate**:
