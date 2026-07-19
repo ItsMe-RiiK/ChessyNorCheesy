@@ -166,6 +166,15 @@ bool ScreenCapture::capture_region(int x, int y, int width, int height)
     return false;
   }
 
+  // FIX MEMORY LEAK: XShmGetImage sends an XShmCompletionEvent to the client.
+  // Since we never read from this display connection's event queue, Xlib builds up
+  // an infinite linked list of events, eventually crashing the system with OOM!
+  XSync(display_, false);
+  XEvent ev;
+  while (XCheckMaskEvent(display_, ~0L, &ev)) {
+    // discard
+  }
+
   return true;
 }
 
