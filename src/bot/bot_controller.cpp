@@ -11,8 +11,8 @@ static std::mt19937 &get_bot_rng()
 }
 
 BotController::BotController() :
-    board_reader_(capture_, theme_manager_), running_(false), should_stop_(false), stockfish_depth_(5), move_delay_min_ms_(800),
-    move_delay_max_ms_(1500), poll_interval_ms_(200)
+    board_reader_(capture_, theme_manager_), running_(false), should_stop_(false), stockfish_depth_(5), move_delay_min_ms_(1500),
+    move_delay_max_ms_(3000), poll_interval_ms_(50), stable_frames_(0)
 {
 }
 
@@ -240,14 +240,45 @@ void BotController::bot_loop()
   {
     // Capture board state visually
     Board detected_board = board_reader_.read_board();
-    bool changed = game_state_.update(detected_board);
 
-    if (changed)
+    // Debounce: check if detected_board is identical to last_seen_board_
+    bool identical = true;
+    for (int r = 0; r < 8; r++)
     {
-      std::string new_fen = game_state_.to_fen();
-      if (on_move_made)
+      for (int f = 0; f < 8; f++)
       {
-        on_move_made(game_state_.get_last_move());
+        if (detected_board[r][f] != last_seen_board_[r][f])
+        {
+          identical = false;
+          break;
+        }
+      }
+      if (!identical)
+        break;
+    }
+
+    if (identical)
+    {
+      stable_frames_++;
+    }
+    else
+    {
+      stable_frames_ = 1;
+      last_seen_board_ = detected_board;
+    }
+
+    // Only process the board if it has remained perfectly stable for 4 consecutive frames (ignores mid-air gliding pieces)
+    if (stable_frames_ == 4)
+    {
+      bool changed = game_state_.update(detected_board);
+
+      if (changed)
+      {
+        std::string new_fen = game_state_.to_fen();
+        if (on_move_made)
+        {
+          on_move_made(game_state_.get_last_move());
+        }
       }
     }
 

@@ -17,7 +17,7 @@
  * BotController — Main orchestrator for the chess bot
  *
  * Runs the game loop: capture screen → read board → detect changes →
- * query Stockfish → execute move via kernel driver mouse.
+ * query Stockfish → execute move via driver mouse.
  */
 class BotController
 {
@@ -86,6 +86,10 @@ private:
   // Status
   std::string current_status_;
   std::string engine_eval_;
+
+  // Debounce tracking
+  Board last_seen_board_;
+  int stable_frames_;
 
   // The main bot loop function
   void bot_loop();
