@@ -41,6 +41,9 @@ static GtkWidget *pgn_view = nullptr;
 static std::atomic<int> calib_state(0); // 0=idle, 1=waiting_first, 2=waiting_second
 static int calib_x1, calib_y1;
 
+// Window visibility state for hotkeys
+static std::atomic<bool> g_window_visible(true);
+
 /* ============================================================
  * GUI update helpers (thread-safe via g_idle_add)
  * ============================================================ */
@@ -252,6 +255,8 @@ static void input_listener_thread()
       struct input_event ev;
       while (read(events[i].data.fd, &ev, sizeof(ev)) > 0)
       {
+        if (!g_window_visible.load()) continue;
+
         // Hotkey: backtick (`) to toggle bot
         if (ev.type == EV_KEY && ev.code == KEY_GRAVE && ev.value == 1)
         {
@@ -501,6 +506,13 @@ static void activate(GtkApplication *app, gpointer user_data)
   gtk_window_set_default_size(GTK_WINDOW(window), 480, 460);
   gtk_container_set_border_width(GTK_CONTAINER(window), 16);
   gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
+
+  g_signal_connect(window, "window-state-event", G_CALLBACK(+[](GtkWidget *widget, GdkEventWindowState *event, gpointer user_data) -> gboolean {
+    if (event->changed_mask & GDK_WINDOW_STATE_ICONIFIED) {
+      g_window_visible = !(event->new_window_state & GDK_WINDOW_STATE_ICONIFIED);
+    }
+    return FALSE;
+  }), NULL);
 
   // Set the application icon
   GError *error = NULL;

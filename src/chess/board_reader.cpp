@@ -109,10 +109,12 @@ Board BoardReader::read_board()
     return board;
 
   // Precompute templates to save massive amounts of CPU
-  struct PrecomputedTemplate {
+  struct PrecomputedTemplate
+  {
     cv::Mat templ_blur;
     cv::Mat search_mask_3c;
   };
+
   std::map<int, PrecomputedTemplate> precomputed;
   for (int p = 1; p <= 12; p++)
   {
@@ -124,15 +126,28 @@ Board BoardReader::read_board()
 
     cv::Mat search_templ = templ;
     cv::Mat search_mask = mask;
+
+    if (!search_mask.empty())
+    {
+      // Aggressive threshold and erosion to eliminate ALL background/shadow bleeding.
+      // This is necessary because Chess.com yellow highlights will bleed into piece edges
+      // and break the TM_SQDIFF_NORMED threshold.
+      cv::threshold(search_mask, search_mask, 240, 255, cv::THRESH_BINARY);
+    }
+
     if (search_templ.cols != square_size_ || search_templ.rows != square_size_)
     {
       cv::resize(search_templ, search_templ, cv::Size(square_size_, square_size_), 0, 0, cv::INTER_LINEAR);
       if (!search_mask.empty())
       {
-        cv::threshold(search_mask, search_mask, 240, 255, cv::THRESH_BINARY);
         cv::resize(search_mask, search_mask, cv::Size(square_size_, square_size_), 0, 0, cv::INTER_NEAREST);
-        cv::erode(search_mask, search_mask, cv::Mat(), cv::Point(-1, -1), 1);
       }
+    }
+
+    if (!search_mask.empty())
+    {
+      // Erode by 2 pixels to cut off any semi-transparent shadow edges
+      cv::erode(search_mask, search_mask, cv::Mat(), cv::Point(-1, -1), 2);
     }
 
     PrecomputedTemplate pt;
@@ -177,7 +192,12 @@ Board BoardReader::read_board()
         if (precomputed.find(p) == precomputed.end())
           continue;
 
-        const PrecomputedTemplate& pt = precomputed[p];
+        const PrecomputedTemplate &pt = precomputed[p];
+
+        if (square_blur.cols < pt.templ_blur.cols || square_blur.rows < pt.templ_blur.rows)
+        {
+          continue;
+        }
 
         cv::Mat result;
         if (!pt.search_mask_3c.empty())
@@ -207,9 +227,12 @@ Board BoardReader::read_board()
         best_piece = Piece::EMPTY;
       }
 
-      if (rank == 0 && file == 0) {
-        printf("[BoardReader] Debug: square (0,0) ROI=(%d,%d %dx%d) best_match = %f, best_piece = %d\n", 
-               roi_x, roi_y, roi_w, roi_h, best_match, (int)best_piece);
+      if (rank == 0 && file == 0)
+      {
+        printf(
+            "[BoardReader] Debug: square (0,0) ROI=(%d,%d %dx%d) best_match = %f, best_piece = %d\n", roi_x, roi_y, roi_w, roi_h,
+            best_match, (int)best_piece
+        );
       }
 
       board[rank][file] = best_piece;

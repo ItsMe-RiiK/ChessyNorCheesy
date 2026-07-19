@@ -251,10 +251,10 @@ void BotController::bot_loop()
       }
     }
 
-    // 3. If it's our turn, calculate and make a move
+    // 3. If it's your turn, calculate and make a move
     if (game_state_.is_our_turn())
     {
-      set_status("Our turn — thinking...");
+      set_status("Your turn — thinking...");
 
       // Add human-like delay before calculating
       human_delay();
@@ -367,11 +367,10 @@ bool BotController::execute_move(const std::string &uci_move)
     click_promotion(uci_move[4]);
   }
 
-  // Move the mouse off the board so it doesn't obscure the piece from OpenCV!
-  // We park it just to the RIGHT of the board to avoid Cinnamon top-left "Hot Corners" and negative coordinates.
-  int park_x, park_y;
-  board_reader_.get_square_center(7, 4, park_x, park_y); // file 7 is the right-most file
-  mouse_.move_to(park_x + (board_reader_.get_square_size() * 2), park_y);
+  // The mouse naturally rests at the destination square (to_x, to_y).
+  // We no longer teleport the mouse to a parking position because:
+  // 1. Instant teleportation is easily detected as bot activity by anti-cheat.
+  // 2. The threshold of 0.08 in board_reader with eroded masks handles minor occlusions perfectly.
 
   return true;
 }

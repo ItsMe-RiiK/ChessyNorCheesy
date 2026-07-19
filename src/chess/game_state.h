@@ -33,7 +33,7 @@ public:
   // Generate FEN string from current position
   std::string to_fen() const;
 
-  // Is it our turn to move?
+  // Is it your turn to move?
   bool is_our_turn() const;
 
   // Has the board changed since last check?
