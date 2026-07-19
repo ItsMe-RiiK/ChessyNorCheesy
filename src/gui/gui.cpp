@@ -598,14 +598,14 @@ static void activate(GtkApplication *app, gpointer user_data)
   GtkWidget *delay_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
   gtk_box_pack_start(GTK_BOX(delay_vbox), delay_hbox, FALSE, FALSE, 0);
 
-  GtkAdjustment *delay_min_adj = gtk_adjustment_new(800.0, 50.0, 5000.0, 50.0, 100.0, 0.0);
+  GtkAdjustment *delay_min_adj = gtk_adjustment_new(1500.0, 50.0, 5000.0, 50.0, 100.0, 0.0); // value, step, page_size, page_increment
   delay_min_spin = gtk_spin_button_new(delay_min_adj, 50.0, 0);
   g_signal_connect(delay_min_spin, "value-changed", G_CALLBACK(on_delay_changed), NULL);
   gtk_box_pack_start(GTK_BOX(delay_hbox), delay_min_spin, TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(delay_hbox), create_label("-", NULL), FALSE, FALSE, 0);
 
-  GtkAdjustment *delay_max_adj = gtk_adjustment_new(1500.0, 50.0, 5000.0, 50.0, 100.0, 0.0);
+  GtkAdjustment *delay_max_adj = gtk_adjustment_new(3000.0, 50.0, 5000.0, 50.0, 100.0, 0.0);
   delay_max_spin = gtk_spin_button_new(delay_max_adj, 50.0, 0);
   g_signal_connect(delay_max_spin, "value-changed", G_CALLBACK(on_delay_changed), NULL);
   gtk_box_pack_start(GTK_BOX(delay_hbox), delay_max_spin, TRUE, TRUE, 0);
