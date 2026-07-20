@@ -11,8 +11,8 @@ static std::mt19937 &get_bot_rng()
 }
 
 BotController::BotController() :
-    board_reader_(capture_, theme_manager_), running_(false), should_stop_(false), stockfish_depth_(5), move_delay_min_ms_(1500),
-    move_delay_max_ms_(3000), poll_interval_ms_(50), stable_frames_(0)
+    board_reader_(capture_, theme_manager_), running_(false), should_stop_(false), stockfish_depth_(4), move_delay_min_ms_(1000),
+    move_delay_max_ms_(5000), poll_interval_ms_(50), stable_frames_(0)
 {
 }
 
@@ -186,36 +186,6 @@ void BotController::set_poll_interval_ms(int ms)
   poll_interval_ms_ = ms;
 }
 
-std::string BotController::get_current_fen() const
-{
-  return game_state_.to_fen();
-}
-
-std::string BotController::get_last_move() const
-{
-  return game_state_.get_last_move();
-}
-
-std::string BotController::get_move_history() const
-{
-  return game_state_.get_move_history();
-}
-
-std::string BotController::get_engine_eval() const
-{
-  return engine_eval_;
-}
-
-std::string BotController::get_status() const
-{
-  return current_status_;
-}
-
-int BotController::get_stockfish_depth() const
-{
-  return stockfish_depth_;
-}
-
 void BotController::set_status(const std::string &status)
 {
   current_status_ = status;
@@ -267,8 +237,8 @@ void BotController::bot_loop()
       last_seen_board_ = detected_board;
     }
 
-    // Only process the board if it has remained perfectly stable for 4 consecutive frames (ignores mid-air gliding pieces)
-    if (stable_frames_ == 4)
+    // Only process the board if it has remained perfectly stable for 2 consecutive frames (ignores mid-air gliding pieces)
+    if (stable_frames_ == 2)
     {
       bool changed = game_state_.update(detected_board);
 
@@ -355,7 +325,9 @@ void BotController::bot_loop()
       // Wait for our own move animation to finish completely before scanning the board again.
       // If we scan during our own animation, the vision system might track our piece mid-air,
       // which causes GameState to think the opponent moved our piece backwards!
-      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+      // Reduced to 300ms to wake up faster and realize the opponent's move instantly,
+      // without needing to increase the overall CPU polling rate.
+      std::this_thread::sleep_for(std::chrono::milliseconds(300));
     }
 
     // 4. Sleep before next poll
