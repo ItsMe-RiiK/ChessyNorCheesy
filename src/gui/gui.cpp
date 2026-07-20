@@ -136,6 +136,27 @@ static gboolean reset_game_idle(gpointer data)
   return G_SOURCE_REMOVE;
 }
 
+static gboolean adjust_delay_idle(gpointer data)
+{
+  intptr_t action = (intptr_t)data; // 1: min+, -1: min-, 2: max+, -2: max-
+  if (!delay_min_spin || !delay_max_spin) return G_SOURCE_REMOVE;
+  
+  if (action == 1) {
+    double val = gtk_spin_button_get_value(GTK_SPIN_BUTTON(delay_min_spin));
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(delay_min_spin), val + 50);
+  } else if (action == -1) {
+    double val = gtk_spin_button_get_value(GTK_SPIN_BUTTON(delay_min_spin));
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(delay_min_spin), val - 50);
+  } else if (action == 2) {
+    double val = gtk_spin_button_get_value(GTK_SPIN_BUTTON(delay_max_spin));
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(delay_max_spin), val + 50);
+  } else if (action == -2) {
+    double val = gtk_spin_button_get_value(GTK_SPIN_BUTTON(delay_max_spin));
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(delay_max_spin), val - 50);
+  }
+  return G_SOURCE_REMOVE;
+}
+
 static void on_calibrate_clicked(GtkWidget *widget, gpointer data);
 
 static gboolean calibrate_idle(gpointer data)
@@ -256,6 +277,9 @@ static void input_listener_thread()
   }
 
   struct epoll_event events[10];
+  bool left_shift_pressed = false;
+  bool right_shift_pressed = false;
+  
   while (true)
   {
     int n = epoll_wait(epfd, events, 10, -1);
@@ -266,6 +290,28 @@ static void input_listener_thread()
       {
         if (!g_window_visible.load())
           continue;
+
+        if (ev.type == EV_KEY)
+        {
+          if (ev.code == KEY_LEFTSHIFT)
+            left_shift_pressed = (ev.value != 0);
+          if (ev.code == KEY_RIGHTSHIFT)
+            right_shift_pressed = (ev.value != 0);
+
+          if (ev.value == 1 || ev.value == 2) // pressed or repeat
+          {
+            if (ev.code == KEY_EQUAL || ev.code == KEY_KPPLUS)
+            {
+              if (left_shift_pressed) g_idle_add(adjust_delay_idle, (gpointer)(intptr_t)1);
+              if (right_shift_pressed) g_idle_add(adjust_delay_idle, (gpointer)(intptr_t)2);
+            }
+            else if (ev.code == KEY_MINUS || ev.code == KEY_KPMINUS)
+            {
+              if (left_shift_pressed) g_idle_add(adjust_delay_idle, (gpointer)(intptr_t)-1);
+              if (right_shift_pressed) g_idle_add(adjust_delay_idle, (gpointer)(intptr_t)-2);
+            }
+          }
+        }
 
         // Hotkey: backtick (`) to toggle bot
         if (ev.type == EV_KEY && ev.code == KEY_GRAVE && ev.value == 1)
