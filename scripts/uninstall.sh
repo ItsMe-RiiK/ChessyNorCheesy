@@ -47,5 +47,13 @@ if [ -f "$UDEV_RULE_FILE" ]; then
     echo -e "${GREEN}[Uninstall] udev rules removed.${NC}"
 fi
 
+ICON_FILE="$HOME/.local/share/icons/hicolor/256x256/apps/chessynotcheesy.png"
+if [ -f "$ICON_FILE" ]; then
+    echo -e "${CYAN}[Uninstall] Removing application icon...${NC}"
+    rm -f "$ICON_FILE"
+    gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
+    echo -e "${GREEN}[Uninstall] Icon removed.${NC}"
+fi
+
 echo -e "${GREEN}[Uninstall] Uninstallation complete.${NC}"
 exit 0

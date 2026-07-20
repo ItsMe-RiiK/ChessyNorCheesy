@@ -51,6 +51,12 @@ if [ ! -d "$DESKTOP_DIR" ]; then
     mkdir -p "$DESKTOP_DIR"
 fi
 
+echo -e "${CYAN}[Install] Installing application icon...${NC}"
+ICON_DIR="$HOME/.local/share/icons/hicolor/256x256/apps"
+mkdir -p "$ICON_DIR"
+cp "$SCRIPT_DIR/images/Icon_256.png" "$ICON_DIR/chessynotcheesy.png"
+gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
+
 echo -e "${GREEN}[Install] Creating desktop shortcut at $DESKTOP_FILE...${NC}"
 
 cat > "$DESKTOP_FILE" << EOF
@@ -60,7 +66,7 @@ Type=Application
 Name=ChessyNotCheesy
 Comment=Autonomous computer-vision chess bot
 Exec=bash "$SCRIPT_DIR/launcher.sh"
-Icon=$SCRIPT_DIR/images/Icon_256.png
+Icon=chessynotcheesy
 Terminal=false
 Categories=Game;BoardGame;
 EOF
