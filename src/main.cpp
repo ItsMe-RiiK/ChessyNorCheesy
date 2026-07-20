@@ -52,17 +52,14 @@ int main(int argc, char** argv) {
     // Ignore SIGPIPE to prevent crash when Stockfish pipe closes
     signal(SIGPIPE, SIG_IGN);
 
-    // Handle test modes
+    // Handle help argument
     for (int i = 1; i < argc; i++)
     {
-        if (strcmp(argv[i], "--test-stockfish") == 0)
-            return test_stockfish();
         if (strcmp(argv[i], "--help") == 0)
         {
             printf("ChessyNotCheesy — Chess.com Automation\n\n");
             printf("Usage: %s [OPTIONS]\n\n", argv[0]);
             printf("Options:\n");
-            printf("  --test-stockfish   Test Stockfish engine communication\n");
             printf("  --help             Show this help\n\n");
             printf("Hotkey: ` (backtick) to toggle bot on/off\n");
             return 0;
