@@ -3,11 +3,6 @@
 
 #include <atomic>
 #include <signal.h>
-#include <string.h>
-
-/* ============================================================
- * Main
- * ============================================================ */
 
 int main(int argc, char** argv) {
     // Ignore SIGPIPE to prevent crash when Stockfish pipe closes
