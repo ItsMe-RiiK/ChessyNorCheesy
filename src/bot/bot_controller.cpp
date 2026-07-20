@@ -197,7 +197,15 @@ void BotController::set_status(const std::string &status)
 
 void BotController::human_delay()
 {
-  std::uniform_int_distribution<int> dist(move_delay_min_ms_, move_delay_max_ms_);
+  int min_ms = move_delay_min_ms_;
+  int max_ms = move_delay_max_ms_;
+  if (min_ms >= max_ms)
+  {
+    if (min_ms > 0)
+      std::this_thread::sleep_for(std::chrono::milliseconds(min_ms));
+    return;
+  }
+  std::uniform_int_distribution<int> dist(min_ms, max_ms);
   int ms = dist(get_bot_rng());
   std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }

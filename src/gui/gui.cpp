@@ -146,19 +146,24 @@ static gboolean adjust_delay_idle(gpointer data)
   intptr_t action = (intptr_t)data; // 1: min+, -1: min-, 2: max+, -2: max-
   if (!delay_min_spin || !delay_max_spin) return G_SOURCE_REMOVE;
   
+  double min_val = gtk_spin_button_get_value(GTK_SPIN_BUTTON(delay_min_spin));
+  double max_val = gtk_spin_button_get_value(GTK_SPIN_BUTTON(delay_max_spin));
+
   if (action == 1) {
-    double val = gtk_spin_button_get_value(GTK_SPIN_BUTTON(delay_min_spin));
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(delay_min_spin), val + 50);
+    min_val += 50;
+    if (min_val > max_val) max_val = min_val;
   } else if (action == -1) {
-    double val = gtk_spin_button_get_value(GTK_SPIN_BUTTON(delay_min_spin));
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(delay_min_spin), val - 50);
+    min_val -= 50;
   } else if (action == 2) {
-    double val = gtk_spin_button_get_value(GTK_SPIN_BUTTON(delay_max_spin));
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(delay_max_spin), val + 50);
+    max_val += 50;
   } else if (action == -2) {
-    double val = gtk_spin_button_get_value(GTK_SPIN_BUTTON(delay_max_spin));
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(delay_max_spin), val - 50);
+    max_val -= 50;
+    if (max_val < min_val) min_val = max_val;
   }
+  
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(delay_min_spin), min_val);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(delay_max_spin), max_val);
+
   return G_SOURCE_REMOVE;
 }
 
