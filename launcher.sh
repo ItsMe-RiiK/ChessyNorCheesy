@@ -1,8 +1,8 @@
 #!/bin/bash
 # ============================================================
 # launcher.sh — Master launcher for ChessyNotCheesy
-# 1. Updates Stockfish to latest version
-# 2. Launches the chess bot
+# 1. Verifies binary exists
+# 2. Launches the chess bot seamlessly
 # ============================================================
 
 set -e
