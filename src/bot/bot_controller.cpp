@@ -4,7 +4,8 @@
 #include <cstdio>
 #include <random>
 
-static std::mt19937& get_bot_rng() {
+static std::mt19937& get_bot_rng()
+{
     static std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count());
     return rng;
 }
@@ -17,14 +18,18 @@ BotController::BotController() :
     move_delay_min_ms_(1000),
     move_delay_max_ms_(5000),
     poll_interval_ms_(50),
-    stable_frames_(0) { }
+    stable_frames_(0)
+{
+}
 
-BotController::~BotController() {
+BotController::~BotController()
+{
     stop();
     cleanup();
 }
 
-bool BotController::init() {
+bool BotController::init()
+{
     set_status("Initializing...");
 
     // Initialize screen capture (X11)
@@ -62,14 +67,16 @@ bool BotController::init() {
     return true;
 }
 
-void BotController::cleanup() {
+void BotController::cleanup()
+{
     stop();
     stockfish_.stop();
     mouse_.close();
     capture_.cleanup();
 }
 
-void BotController::start() {
+void BotController::start()
+{
     if (running_)
         return;
 
@@ -87,7 +94,8 @@ void BotController::start() {
     set_status("Bot RUNNING — watching for moves...");
 }
 
-void BotController::stop() {
+void BotController::stop()
+{
     if (!running_)
         return;
 
@@ -102,7 +110,8 @@ void BotController::stop() {
 
 bool BotController::is_running() const { return running_; }
 
-void BotController::calibrate(int tl_x, int tl_y, int br_x, int br_y) {
+void BotController::calibrate(int tl_x, int tl_y, int br_x, int br_y)
+{
     board_reader_.calibrate(tl_x, tl_y, br_x, br_y);
     game_state_.reset();
 
@@ -152,21 +161,24 @@ void BotController::reset_game() { game_state_.reset(); }
 
 bool BotController::is_calibrated() const { return board_reader_.is_calibrated(); }
 
-void BotController::set_playing_white(bool white) {
+void BotController::set_playing_white(bool white)
+{
     board_reader_.set_playing_white(white);
     game_state_.set_playing_white(white);
 }
 
 void BotController::set_stockfish_depth(int depth) { stockfish_depth_ = depth; }
 
-void BotController::set_move_delay(int min_ms, int max_ms) {
+void BotController::set_move_delay(int min_ms, int max_ms)
+{
     move_delay_min_ms_ = min_ms;
     move_delay_max_ms_ = max_ms;
 }
 
 void BotController::set_poll_interval_ms(int ms) { poll_interval_ms_ = ms; }
 
-void BotController::set_status(const std::string& status) {
+void BotController::set_status(const std::string& status)
+{
     current_status_ = status;
     printf("[ChessyNotCheesy] %s\n", status.c_str());
 
@@ -174,7 +186,8 @@ void BotController::set_status(const std::string& status) {
         on_status_change(status);
 }
 
-void BotController::human_delay() {
+void BotController::human_delay()
+{
     int min_ms = move_delay_min_ms_;
     int max_ms = move_delay_max_ms_;
     if (min_ms >= max_ms)
@@ -188,7 +201,8 @@ void BotController::human_delay() {
     std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
-void BotController::bot_loop() {
+void BotController::bot_loop()
+{
     printf("[ChessyNotCheesy] Bot loop started.\n");
 
     while (!should_stop_)
@@ -322,7 +336,8 @@ void BotController::bot_loop() {
     printf("[ChessyNotCheesy] Bot loop ended.\n");
 }
 
-bool BotController::execute_move(const std::string& uci_move) {
+bool BotController::execute_move(const std::string& uci_move)
+{
     if (uci_move.size() < 4)
         return false;
 
@@ -337,8 +352,10 @@ bool BotController::execute_move(const std::string& uci_move) {
     board_reader_.get_square_center(from_file, from_rank, from_x, from_y);
     board_reader_.get_square_center(to_file, to_rank, to_x, to_y);
 
-    printf("[ChessyNotCheesy] Move %s: click (%d,%d) → (%d,%d)\n", uci_move.c_str(), from_x, from_y,
-           to_x, to_y);
+    printf(
+      "[ChessyNotCheesy] Move %s: click (%d,%d) → (%d,%d)\n", uci_move.c_str(), from_x, from_y,
+      to_x, to_y
+    );
 
     // Drag the piece from source to destination. This works across all chess.com move methods.
     if (!mouse_.drag(from_x, from_y, to_x, to_y))
@@ -363,7 +380,8 @@ bool BotController::execute_move(const std::string& uci_move) {
     return true;
 }
 
-bool BotController::click_promotion(char promo_piece) {
+bool BotController::click_promotion(char promo_piece)
+{
     /*
    * Chess.com promotion UI: when a pawn reaches the last rank,
    * a popup appears with 4 options vertically stacked on the

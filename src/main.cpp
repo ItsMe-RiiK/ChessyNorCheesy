@@ -4,7 +4,8 @@
 #include <atomic>
 #include <signal.h>
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
     // Ignore SIGPIPE to prevent crash when Stockfish pipe closes
     signal(SIGPIPE, SIG_IGN);
 

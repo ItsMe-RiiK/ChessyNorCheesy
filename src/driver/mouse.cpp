@@ -8,7 +8,8 @@
 #include <thread>
 #include <unistd.h>
 
-static std::mt19937& get_rng() {
+static std::mt19937& get_rng()
+{
     static std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count());
     return rng;
 }
@@ -19,11 +20,14 @@ X11Mouse::X11Mouse() :
     click_delay_max_ms_(80),
     move_delay_min_ms_(5),
     move_delay_max_ms_(15),
-    jitter_pixels_(2) { }
+    jitter_pixels_(2)
+{
+}
 
 X11Mouse::~X11Mouse() { close(); }
 
-bool X11Mouse::open() {
+bool X11Mouse::open()
+{
     if (display_)
         return true;
 
@@ -38,7 +42,8 @@ bool X11Mouse::open() {
     return true;
 }
 
-void X11Mouse::close() {
+void X11Mouse::close()
+{
     if (display_)
     {
         XCloseDisplay(display_);
@@ -46,20 +51,23 @@ void X11Mouse::close() {
     }
 }
 
-int X11Mouse::random_range(int min_val, int max_val) {
+int X11Mouse::random_range(int min_val, int max_val)
+{
     if (min_val >= max_val)
         return min_val;
     std::uniform_int_distribution<int> dist(min_val, max_val);
     return dist(get_rng());
 }
 
-void X11Mouse::random_delay(int min_ms, int max_ms) {
+void X11Mouse::random_delay(int min_ms, int max_ms)
+{
     int ms = random_range(min_ms, max_ms);
     if (ms > 0)
         std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
-bool X11Mouse::move_to(int x, int y) {
+bool X11Mouse::move_to(int x, int y)
+{
     // Add small random jitter for human-like behavior
     if (jitter_pixels_ > 0)
     {
@@ -78,7 +86,8 @@ bool X11Mouse::move_to(int x, int y) {
     return false;
 }
 
-bool X11Mouse::click(int x, int y) {
+bool X11Mouse::click(int x, int y)
+{
     if (!move_to(x, y))
         return false;
 
@@ -93,7 +102,8 @@ bool X11Mouse::click(int x, int y) {
     return button_release(BTN_LEFT);
 }
 
-bool X11Mouse::drag(int from_x, int from_y, int to_x, int to_y) {
+bool X11Mouse::drag(int from_x, int from_y, int to_x, int to_y)
+{
     // 1. Move to the source position
     if (!move_to(from_x, from_y))
         return false;
@@ -134,7 +144,8 @@ bool X11Mouse::drag(int from_x, int from_y, int to_x, int to_y) {
     return true;
 }
 
-bool X11Mouse::button_press(uint32_t button_code) {
+bool X11Mouse::button_press(uint32_t button_code)
+{
     if (display_)
     {
         int x11_btn = 1;
@@ -149,7 +160,8 @@ bool X11Mouse::button_press(uint32_t button_code) {
     return false;
 }
 
-bool X11Mouse::button_release(uint32_t button_code) {
+bool X11Mouse::button_release(uint32_t button_code)
+{
     if (display_)
     {
         int x11_btn = 1;
@@ -164,12 +176,14 @@ bool X11Mouse::button_release(uint32_t button_code) {
     return false;
 }
 
-void X11Mouse::set_click_delay_ms(int min_ms, int max_ms) {
+void X11Mouse::set_click_delay_ms(int min_ms, int max_ms)
+{
     click_delay_min_ms_ = min_ms;
     click_delay_max_ms_ = max_ms;
 }
 
-void X11Mouse::set_move_delay_ms(int min_ms, int max_ms) {
+void X11Mouse::set_move_delay_ms(int min_ms, int max_ms)
+{
     move_delay_min_ms_ = min_ms;
     move_delay_max_ms_ = max_ms;
 }

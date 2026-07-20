@@ -13,7 +13,8 @@
  * detects board changes, and tracks move history.
  * Refines piece types using starting position knowledge and move tracking.
  */
-class GameState {
+class GameState
+{
    public:
     GameState();
     ~GameState() = default;

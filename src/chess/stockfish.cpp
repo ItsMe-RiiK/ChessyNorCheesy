@@ -13,11 +13,14 @@ StockfishEngine::StockfishEngine() :
     child_pid_(-1),
     to_engine_fd_(-1),
     from_engine_fd_(-1),
-    last_score_(0) { }
+    last_score_(0)
+{
+}
 
 StockfishEngine::~StockfishEngine() { stop(); }
 
-bool StockfishEngine::start(const std::string& path) {
+bool StockfishEngine::start(const std::string& path)
+{
     if (child_pid_ > 0)
         return true;  // Already running
 
@@ -98,7 +101,8 @@ bool StockfishEngine::start(const std::string& path) {
     return true;
 }
 
-void StockfishEngine::stop() {
+void StockfishEngine::stop()
+{
     if (child_pid_ > 0)
     {
         send_command("quit");
@@ -135,7 +139,8 @@ void StockfishEngine::stop() {
 
 bool StockfishEngine::is_running() const { return child_pid_ > 0; }
 
-bool StockfishEngine::send_command(const std::string& cmd) {
+bool StockfishEngine::send_command(const std::string& cmd)
+{
     if (to_engine_fd_ < 0)
         return false;
 
@@ -174,7 +179,8 @@ bool StockfishEngine::send_command(const std::string& cmd) {
     return true;
 }
 
-std::string StockfishEngine::read_line() {
+std::string StockfishEngine::read_line()
+{
     if (from_engine_fd_ < 0)
         return "";
 
@@ -193,14 +199,16 @@ std::string StockfishEngine::read_line() {
     return line;
 }
 
-std::string StockfishEngine::wait_for(const std::string& prefix, int timeout_ms) {
+std::string StockfishEngine::wait_for(const std::string& prefix, int timeout_ms)
+{
     auto start = std::chrono::steady_clock::now();
 
     while (true)
     {
         // Check timeout
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-                         std::chrono::steady_clock::now() - start)
+                         std::chrono::steady_clock::now() - start
+        )
                          .count();
         if (elapsed >= timeout_ms)
             return "";
@@ -246,7 +254,8 @@ std::string StockfishEngine::wait_for(const std::string& prefix, int timeout_ms)
     }
 }
 
-bool StockfishEngine::set_position(const std::string& fen) {
+bool StockfishEngine::set_position(const std::string& fen)
+{
     // Stop any ongoing search before setting a new position
     send_command("stop");
     send_command("isready");
@@ -262,7 +271,8 @@ bool StockfishEngine::set_position(const std::string& fen) {
     return true;
 }
 
-std::string StockfishEngine::get_best_move(int depth) {
+std::string StockfishEngine::get_best_move(int depth)
+{
     last_score_ = 0;
     last_pv_.clear();
 
@@ -292,7 +302,8 @@ std::string StockfishEngine::get_best_move(int depth) {
     return move;
 }
 
-bool StockfishEngine::set_option(const std::string& name, const std::string& value) {
+bool StockfishEngine::set_option(const std::string& name, const std::string& value)
+{
     std::string cmd = "setoption name " + name + " value " + value;
     return send_command(cmd);
 }
@@ -307,7 +318,8 @@ int StockfishEngine::get_last_score() const { return last_score_; }
 
 std::string StockfishEngine::get_last_pv() const { return last_pv_; }
 
-void StockfishEngine::parse_info_line(const std::string& line) {
+void StockfishEngine::parse_info_line(const std::string& line)
+{
     std::istringstream iss(line);
     std::string        token;
 

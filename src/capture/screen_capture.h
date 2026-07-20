@@ -23,11 +23,13 @@
  * XGetImage which copies pixels over the X11 socket.
  */
 
-struct Pixel {
+struct Pixel
+{
     uint8_t r, g, b;
 };
 
-class ScreenCapture {
+class ScreenCapture
+{
    public:
     ScreenCapture();
     ~ScreenCapture();

@@ -11,7 +11,8 @@
  * Manages separate templates for chessboard and pieces.
  * Handles loading, caching, and iterating through available themes.
  */
-class ThemeManager {
+class ThemeManager
+{
    public:
     ThemeManager();
     ~ThemeManager() = default;

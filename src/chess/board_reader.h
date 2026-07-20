@@ -17,7 +17,8 @@
  */
 
 // Chess piece types
-enum class Piece : int {
+enum class Piece : int
+{
     EMPTY = 0,
     WHITE_PAWN,
     WHITE_KNIGHT,
@@ -36,7 +37,8 @@ enum class Piece : int {
 // 8x8 board representation
 using Board = std::array<std::array<Piece, 8>, 8>;
 
-class BoardReader {
+class BoardReader
+{
    public:
     BoardReader(ScreenCapture& capture, ThemeManager& theme_manager);
     ~BoardReader() = default;

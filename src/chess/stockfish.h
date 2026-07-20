@@ -9,7 +9,8 @@
  * Spawns a Stockfish process and communicates via stdin/stdout pipes
  * using the Universal Chess Interface (UCI) protocol.
  */
-class StockfishEngine {
+class StockfishEngine
+{
    public:
     StockfishEngine();
     ~StockfishEngine();

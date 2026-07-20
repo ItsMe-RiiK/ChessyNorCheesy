@@ -48,13 +48,15 @@ static std::atomic<bool> g_window_visible(true);
  * GUI update helpers (thread-safe via g_idle_add)
  * ============================================================ */
 
-struct StatusUpdate {
+struct StatusUpdate
+{
     std::string text;
 };
 
 static int g_ply_count = 0;
 
-static gboolean update_status_idle(gpointer data) {
+static gboolean update_status_idle(gpointer data)
+{
     StatusUpdate* upd = (StatusUpdate*) data;
     if (status_label)
     {
@@ -64,7 +66,8 @@ static gboolean update_status_idle(gpointer data) {
     return G_SOURCE_REMOVE;
 }
 
-static gboolean update_move_idle(gpointer data) {
+static gboolean update_move_idle(gpointer data)
+{
     auto* upd = static_cast<StatusUpdate*>(data);
     if (pgn_buffer)
     {
@@ -104,19 +107,22 @@ static gboolean update_move_idle(gpointer data) {
     return G_SOURCE_REMOVE;
 }
 
-static gboolean update_toggle_btn_idle(gpointer data) {
+static gboolean update_toggle_btn_idle(gpointer data)
+{
     bool active = bot_active.load();
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggle_btn), active);
     return G_SOURCE_REMOVE;
 }
 
-static gboolean update_color_combo_idle(gpointer data) {
+static gboolean update_color_combo_idle(gpointer data)
+{
     bool is_white = (bool) (intptr_t) data;
     gtk_combo_box_set_active(GTK_COMBO_BOX(color_combo), is_white ? 0 : 1);
     return G_SOURCE_REMOVE;
 }
 
-static gboolean reset_game_idle(gpointer data) {
+static gboolean reset_game_idle(gpointer data)
+{
     if (g_bot)
     {
         if (g_ply_count == 0)
@@ -135,7 +141,8 @@ static gboolean reset_game_idle(gpointer data) {
     return G_SOURCE_REMOVE;
 }
 
-static gboolean adjust_delay_idle(gpointer data) {
+static gboolean adjust_delay_idle(gpointer data)
+{
     intptr_t action = (intptr_t) data;  // 1: min+, -1: min-, 2: max+, -2: max-
     if (!delay_min_spin || !delay_max_spin)
         return G_SOURCE_REMOVE;
@@ -172,7 +179,8 @@ static gboolean adjust_delay_idle(gpointer data) {
 
 static void on_calibrate_clicked(GtkWidget* widget, gpointer data);
 
-static gboolean calibrate_idle(gpointer data) {
+static gboolean calibrate_idle(gpointer data)
+{
     on_calibrate_clicked(calibrate_btn, NULL);
     return G_SOURCE_REMOVE;
 }
@@ -181,7 +189,8 @@ static gboolean calibrate_idle(gpointer data) {
  * GUI callbacks
  * ============================================================ */
 
-static void on_toggle(GtkWidget* widget, gpointer data) {
+static void on_toggle(GtkWidget* widget, gpointer data)
+{
     bool active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
     bot_active  = active;
 
@@ -197,42 +206,50 @@ static void on_toggle(GtkWidget* widget, gpointer data) {
     }
 }
 
-static void on_calibrate_clicked(GtkWidget* widget, gpointer data) {
+static void on_calibrate_clicked(GtkWidget* widget, gpointer data)
+{
     if (calib_state == 0)
     {
         calib_state = 1;
         if (calibrate_btn)
             gtk_button_set_label(GTK_BUTTON(calibrate_btn), "Click TOP-LEFT (a8)");
-        gtk_label_set_text(GTK_LABEL(status_label),
-                           "CALIBRATING: Click the TOP-LEFT corner of the board (a8 square)");
+        gtk_label_set_text(
+          GTK_LABEL(status_label), "CALIBRATING: Click the TOP-LEFT corner of the board (a8 square)"
+        );
     }
     else if (calib_state == 3)
     {
         calib_state = 4;
-        gtk_label_set_text(GTK_LABEL(status_label),
-                           "Confirm recalibration? Press 'C' or click Calibrate again to confirm.");
+        gtk_label_set_text(
+          GTK_LABEL(status_label),
+          "Confirm recalibration? Press 'C' or click Calibrate again to confirm."
+        );
     }
     else if (calib_state == 4)
     {
         calib_state = 1;
         if (calibrate_btn)
             gtk_button_set_label(GTK_BUTTON(calibrate_btn), "Click TOP-LEFT (a8)");
-        gtk_label_set_text(GTK_LABEL(status_label),
-                           "CALIBRATING: Click the TOP-LEFT corner of the board (a8 square)");
+        gtk_label_set_text(
+          GTK_LABEL(status_label), "CALIBRATING: Click the TOP-LEFT corner of the board (a8 square)"
+        );
     }
 }
 
-static void on_depth_changed(GtkRange* range, gpointer data) {
+static void on_depth_changed(GtkRange* range, gpointer data)
+{
     int depth = (int) gtk_range_get_value(range);
     bot.set_stockfish_depth(depth);
 }
 
-static void on_color_changed(GtkComboBox* combo, gpointer data) {
+static void on_color_changed(GtkComboBox* combo, gpointer data)
+{
     int color_idx = gtk_combo_box_get_active(combo);
     bot.set_playing_white(color_idx == 0);
 }
 
-static void on_spin_activate(GtkWidget* widget, gpointer data) {
+static void on_spin_activate(GtkWidget* widget, gpointer data)
+{
     GtkWidget* toplevel = gtk_widget_get_toplevel(widget);
     if (GTK_IS_WINDOW(toplevel))
     {
@@ -240,13 +257,15 @@ static void on_spin_activate(GtkWidget* widget, gpointer data) {
     }
 }
 
-static void on_delay_changed(GtkSpinButton* spin, gpointer data) {
+static void on_delay_changed(GtkSpinButton* spin, gpointer data)
+{
     int delay_min = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(delay_min_spin));
     int delay_max = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(delay_max_spin));
     bot.set_move_delay(delay_min, delay_max);
 }
 
-static void on_always_on_top_toggled(GtkToggleButton* togglebutton, gpointer user_data) {
+static void on_always_on_top_toggled(GtkToggleButton* togglebutton, gpointer user_data)
+{
     GtkWindow* window = GTK_WINDOW(user_data);
     bool       active = gtk_toggle_button_get_active(togglebutton);
     gtk_window_set_keep_above(window, active);
@@ -256,7 +275,8 @@ static void on_always_on_top_toggled(GtkToggleButton* togglebutton, gpointer use
  * Hotkey + Calibration click listener thread
  * ============================================================ */
 
-static void input_listener_thread() {
+static void input_listener_thread()
+{
     int epfd = epoll_create1(0);
     if (epfd < 0)
         return;
@@ -391,8 +411,9 @@ static void input_listener_thread() {
                             Window       child;
                             int          root_x, root_y, win_x, win_y;
                             unsigned int mask;
-                            XQueryPointer(dpy, root, &root, &child, &root_x, &root_y, &win_x,
-                                          &win_y, &mask);
+                            XQueryPointer(
+                              dpy, root, &root, &child, &root_x, &root_y, &win_x, &win_y, &mask
+                            );
                             XCloseDisplay(dpy);
 
                             if (calib_state == 1)
@@ -403,14 +424,17 @@ static void input_listener_thread() {
 
                                 g_idle_add(
                                   +[](gpointer data) -> gboolean {
-                                      gtk_button_set_label(GTK_BUTTON(calibrate_btn),
-                                                           "Click BOTTOM-RIGHT (h1)");
+                                      gtk_button_set_label(
+                                        GTK_BUTTON(calibrate_btn), "Click BOTTOM-RIGHT (h1)"
+                                      );
                                       return G_SOURCE_REMOVE;
                                   },
-                                  NULL);
+                                  NULL
+                                );
 
                                 auto* upd = new StatusUpdate{
-                                  "CALIBRATING: Now click BOTTOM-RIGHT corner (h1)"};
+                                  "CALIBRATING: Now click BOTTOM-RIGHT corner (h1)"
+                                };
                                 g_idle_add(update_status_idle, upd);
                             }
                             else if (calib_state == 2)
@@ -424,11 +448,13 @@ static void input_listener_thread() {
                                 // Reset calibrate button label
                                 g_idle_add(
                                   +[](gpointer data) -> gboolean {
-                                      gtk_button_set_label(GTK_BUTTON(calibrate_btn),
-                                                           "🎯 (C)alibrate Board");
+                                      gtk_button_set_label(
+                                        GTK_BUTTON(calibrate_btn), "🎯 (C)alibrate Board"
+                                      );
                                       return G_SOURCE_REMOVE;
                                   },
-                                  NULL);
+                                  NULL
+                                );
                             }
                         }
                     }
@@ -446,7 +472,8 @@ static void input_listener_thread() {
  * GTK Application
  * ============================================================ */
 
-static void apply_css(GtkWidget* widget) {
+static void apply_css(GtkWidget* widget)
+{
     GtkCssProvider* provider = gtk_css_provider_new();
 
     const char* css = "window {"
@@ -558,13 +585,15 @@ static void apply_css(GtkWidget* widget) {
                       "}";
 
     gtk_css_provider_load_from_data(provider, css, -1, NULL);
-    gtk_style_context_add_provider_for_screen(gdk_screen_get_default(),
-                                              GTK_STYLE_PROVIDER(provider),
-                                              GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    gtk_style_context_add_provider_for_screen(
+      gdk_screen_get_default(), GTK_STYLE_PROVIDER(provider),
+      GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
+    );
     g_object_unref(provider);
 }
 
-static GtkWidget* create_label(const char* text, const char* css_class) {
+static GtkWidget* create_label(const char* text, const char* css_class)
+{
     GtkWidget* label = gtk_label_new(text);
     gtk_widget_set_halign(label, GTK_ALIGN_START);
 
@@ -577,7 +606,8 @@ static GtkWidget* create_label(const char* text, const char* css_class) {
     return label;
 }
 
-static void activate(GtkApplication* app, gpointer user_data) {
+static void activate(GtkApplication* app, gpointer user_data)
+{
     // Prevent double windows if second instance tries to launch
     GList* windows = gtk_application_get_windows(app);
     if (windows != NULL)
@@ -592,17 +622,19 @@ static void activate(GtkApplication* app, gpointer user_data) {
     gtk_container_set_border_width(GTK_CONTAINER(window), 16);
     gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
 
-    g_signal_connect(window, "window-state-event",
-                     G_CALLBACK(+[](GtkWidget* widget, GdkEventWindowState* event,
-                                    gpointer user_data) -> gboolean {
-                         if (event->changed_mask & GDK_WINDOW_STATE_ICONIFIED)
-                         {
-                             g_window_visible =
-                               !(event->new_window_state & GDK_WINDOW_STATE_ICONIFIED);
-                         }
-                         return FALSE;
-                     }),
-                     NULL);
+    g_signal_connect(
+      window, "window-state-event",
+      G_CALLBACK(
+        +[](GtkWidget* widget, GdkEventWindowState* event, gpointer user_data) -> gboolean {
+            if (event->changed_mask & GDK_WINDOW_STATE_ICONIFIED)
+            {
+                g_window_visible = !(event->new_window_state & GDK_WINDOW_STATE_ICONIFIED);
+            }
+            return FALSE;
+        }
+      ),
+      NULL
+    );
 
     // Set the application icon
     GError* error = NULL;
@@ -628,8 +660,9 @@ static void activate(GtkApplication* app, gpointer user_data) {
     gtk_widget_set_halign(top_check, GTK_ALIGN_CENTER);
     gtk_box_pack_start(GTK_BOX(vbox), top_check, FALSE, FALSE, 0);
 
-    gtk_box_pack_start(GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE,
-                       4);
+    gtk_box_pack_start(
+      GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 4
+    );
 
     // Calibration ──
     calibrate_btn = gtk_button_new_with_label("🎯 (C)alibrate");
@@ -637,10 +670,10 @@ static void activate(GtkApplication* app, gpointer user_data) {
     gtk_box_pack_start(GTK_BOX(vbox), calibrate_btn, FALSE, FALSE, 0);
 
     GtkWidget* reset_btn = gtk_button_new_with_label("🔄 (R)eset Game");
-    g_signal_connect(reset_btn, "clicked", G_CALLBACK(+[](GtkWidget* widget, gpointer data) {
-                         g_idle_add(reset_game_idle, NULL);
-                     }),
-                     NULL);
+    g_signal_connect(
+      reset_btn, "clicked",
+      G_CALLBACK(+[](GtkWidget* widget, gpointer data) { g_idle_add(reset_game_idle, NULL); }), NULL
+    );
     gtk_box_pack_start(GTK_BOX(vbox), reset_btn, FALSE, FALSE, 0);
 
     // ── Color Selector ──
@@ -656,8 +689,9 @@ static void activate(GtkApplication* app, gpointer user_data) {
     g_signal_connect(color_combo, "changed", G_CALLBACK(on_color_changed), NULL);
     gtk_box_pack_start(GTK_BOX(color_hbox), color_combo, TRUE, TRUE, 0);
 
-    gtk_box_pack_start(GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE,
-                       4);
+    gtk_box_pack_start(
+      GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 4
+    );
 
     // ── Engine Settings ──
     gtk_box_pack_start(GTK_BOX(vbox), create_label("Engine Settings", "section"), FALSE, FALSE, 0);
@@ -680,8 +714,9 @@ static void activate(GtkApplication* app, gpointer user_data) {
     // Move delay
     GtkWidget* delay_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
     gtk_box_pack_start(GTK_BOX(vbox), delay_vbox, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(delay_vbox), create_label("Mouse Delay (ms):", NULL), FALSE, FALSE,
-                       0);
+    gtk_box_pack_start(
+      GTK_BOX(delay_vbox), create_label("Mouse Delay (ms):", NULL), FALSE, FALSE, 0
+    );
 
     GtkWidget* delay_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
     gtk_box_pack_start(GTK_BOX(delay_vbox), delay_hbox, FALSE, FALSE, 0);
@@ -702,8 +737,9 @@ static void activate(GtkApplication* app, gpointer user_data) {
     g_signal_connect(delay_max_spin, "activate", G_CALLBACK(on_spin_activate), NULL);
     gtk_box_pack_start(GTK_BOX(delay_hbox), delay_max_spin, TRUE, TRUE, 0);
 
-    gtk_box_pack_start(GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE,
-                       4);
+    gtk_box_pack_start(
+      GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 4
+    );
 
     // ── Start / Stop ──
     toggle_btn = gtk_toggle_button_new_with_label("▶ Start Bot (Key: `)");
@@ -719,8 +755,9 @@ static void activate(GtkApplication* app, gpointer user_data) {
     gtk_widget_set_halign(hotkey_hint, GTK_ALIGN_CENTER);
     gtk_box_pack_start(GTK_BOX(vbox), hotkey_hint, FALSE, FALSE, 0);
 
-    gtk_box_pack_start(GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE,
-                       4);
+    gtk_box_pack_start(
+      GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 4
+    );
 
     // ── Status Display ──
     gtk_box_pack_start(GTK_BOX(vbox), create_label("Status", "section"), FALSE, FALSE, 0);
@@ -731,8 +768,9 @@ static void activate(GtkApplication* app, gpointer user_data) {
     gtk_box_pack_start(GTK_BOX(vbox), status_label, FALSE, FALSE, 0);
 
     // ── PGN Sidebar ──
-    gtk_box_pack_start(GTK_BOX(main_hbox), gtk_separator_new(GTK_ORIENTATION_VERTICAL), FALSE,
-                       FALSE, 0);
+    gtk_box_pack_start(
+      GTK_BOX(main_hbox), gtk_separator_new(GTK_ORIENTATION_VERTICAL), FALSE, FALSE, 0
+    );
 
     GtkWidget* pgn_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
     gtk_box_pack_start(GTK_BOX(main_hbox), pgn_vbox, TRUE, TRUE, 0);
@@ -741,8 +779,9 @@ static void activate(GtkApplication* app, gpointer user_data) {
     gtk_box_pack_start(GTK_BOX(pgn_vbox), pgn_title, FALSE, FALSE, 0);
 
     GtkWidget* scrolled_window = gtk_scrolled_window_new(NULL, NULL);
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_NEVER,
-                                   GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_policy(
+      GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC
+    );
     gtk_widget_set_size_request(scrolled_window, 200, -1);
     gtk_box_pack_start(GTK_BOX(pgn_vbox), scrolled_window, TRUE, TRUE, 0);
 
@@ -784,7 +823,8 @@ static void activate(GtkApplication* app, gpointer user_data) {
 
 #include <X11/Xlib.h>
 
-int run_gui(int argc, char** argv, BotController& bot_ref, std::atomic<bool>& bot_active_ref) {
+int run_gui(int argc, char** argv, BotController& bot_ref, std::atomic<bool>& bot_active_ref)
+{
     g_bot        = &bot_ref;
     g_bot_active = &bot_active_ref;
 

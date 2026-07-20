@@ -13,13 +13,15 @@ ScreenCapture::ScreenCapture() :
     cap_x_(0),
     cap_y_(0),
     cap_width_(0),
-    cap_height_(0) {
+    cap_height_(0)
+{
     memset(&shm_info_, 0, sizeof(shm_info_));
 }
 
 ScreenCapture::~ScreenCapture() { cleanup(); }
 
-bool ScreenCapture::init() {
+bool ScreenCapture::init()
+{
     display_ = XOpenDisplay(nullptr);
     if (!display_)
     {
@@ -46,7 +48,8 @@ bool ScreenCapture::init() {
     return true;
 }
 
-void ScreenCapture::cleanup() {
+void ScreenCapture::cleanup()
+{
     free_shm();
 
     if (display_)
@@ -56,7 +59,8 @@ void ScreenCapture::cleanup() {
     }
 }
 
-void ScreenCapture::free_shm() {
+void ScreenCapture::free_shm()
+{
     if (ximage_)
     {
         if (shm_attached_)
@@ -78,7 +82,8 @@ void ScreenCapture::free_shm() {
     }
 }
 
-bool ScreenCapture::alloc_shm(int width, int height) {
+bool ScreenCapture::alloc_shm(int width, int height)
+{
     if (!display_)
         return false;
 
@@ -137,7 +142,8 @@ bool ScreenCapture::alloc_shm(int width, int height) {
     return true;
 }
 
-bool ScreenCapture::capture_region(int x, int y, int width, int height) {
+bool ScreenCapture::capture_region(int x, int y, int width, int height)
+{
     if (!display_)
         return false;
 
@@ -179,7 +185,8 @@ bool ScreenCapture::capture_region(int x, int y, int width, int height) {
     return true;
 }
 
-const uint8_t* ScreenCapture::get_buffer() const {
+const uint8_t* ScreenCapture::get_buffer() const
+{
     if (!ximage_)
         return nullptr;
     return (const uint8_t*) ximage_->data;

@@ -7,7 +7,8 @@
 
 ThemeManager::ThemeManager() { }
 
-bool ThemeManager::load_board_theme(const std::string& board_name) {
+bool ThemeManager::load_board_theme(const std::string& board_name)
+{
     std::string corner_path = "themes/chessboard/" + board_name + "/board_corner.png";
     cv::Mat     corner      = cv::imread(corner_path, cv::IMREAD_COLOR);
 
@@ -22,12 +23,14 @@ bool ThemeManager::load_board_theme(const std::string& board_name) {
     return true;
 }
 
-bool ThemeManager::load_piece_theme(const std::string& piece_name) {
+bool ThemeManager::load_piece_theme(const std::string& piece_name)
+{
     piece_templates_.clear();
 
-    std::map<int, std::string> piece_files = {
-      {1, "wp.png"}, {2, "wn.png"}, {3, "wb.png"}, {4, "wr.png"},  {5, "wq.png"},  {6, "wk.png"},
-      {7, "bp.png"}, {8, "bn.png"}, {9, "bb.png"}, {10, "br.png"}, {11, "bq.png"}, {12, "bk.png"}};
+    std::map<int, std::string> piece_files = {{1, "wp.png"},  {2, "wn.png"},  {3, "wb.png"},
+                                              {4, "wr.png"},  {5, "wq.png"},  {6, "wk.png"},
+                                              {7, "bp.png"},  {8, "bn.png"},  {9, "bb.png"},
+                                              {10, "br.png"}, {11, "bq.png"}, {12, "bk.png"}};
 
     bool        all_loaded = true;
     std::string base_path  = "themes/pieces/" + piece_name + "/";
@@ -43,8 +46,9 @@ bool ThemeManager::load_piece_theme(const std::string& piece_name) {
         }
         else
         {
-            printf("[ThemeManager] Loaded %s with %d channels\n", kv.second.c_str(),
-                   img.channels());
+            printf(
+              "[ThemeManager] Loaded %s with %d channels\n", kv.second.c_str(), img.channels()
+            );
             if (img.channels() == 4)
             {
                 std::vector<cv::Mat> channels;
@@ -75,8 +79,10 @@ bool ThemeManager::load_piece_theme(const std::string& piece_name) {
     return false;
 }
 
-bool ThemeManager::load_default_config(std::string& out_board_name,
-                                       std::string& out_piece_name) const {
+bool ThemeManager::load_default_config(
+  std::string& out_board_name, std::string& out_piece_name
+) const
+{
     std::ifstream in("themes/default.cfg");
     if (!in.is_open())
         return false;
@@ -95,7 +101,8 @@ bool ThemeManager::load_default_config(std::string& out_board_name,
     return false;
 }
 
-cv::Mat ThemeManager::get_template(int piece_id) const {
+cv::Mat ThemeManager::get_template(int piece_id) const
+{
     auto it = piece_templates_.find(piece_id);
     if (it != piece_templates_.end())
     {
@@ -104,7 +111,8 @@ cv::Mat ThemeManager::get_template(int piece_id) const {
     return cv::Mat();
 }
 
-cv::Mat ThemeManager::get_mask(int piece_id) const {
+cv::Mat ThemeManager::get_mask(int piece_id) const
+{
     auto it = piece_masks_.find(piece_id);
     if (it != piece_masks_.end())
     {
@@ -115,11 +123,13 @@ cv::Mat ThemeManager::get_mask(int piece_id) const {
 
 cv::Mat ThemeManager::get_board_corner_template() const { return board_corner_; }
 
-std::vector<std::string> ThemeManager::get_available_pieces() const {
+std::vector<std::string> ThemeManager::get_available_pieces() const
+{
     return scan_directory("themes/pieces");
 }
 
-std::vector<std::string> ThemeManager::scan_directory(const std::string& path) const {
+std::vector<std::string> ThemeManager::scan_directory(const std::string& path) const
+{
     std::vector<std::string> dirs;
     DIR*                     dir = opendir(path.c_str());
     if (!dir)

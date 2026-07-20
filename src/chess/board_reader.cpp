@@ -13,16 +13,21 @@ BoardReader::BoardReader(ScreenCapture& capture, ThemeManager& theme_manager) :
     board_tl_y_(0),
     board_br_x_(0),
     board_br_y_(0),
-    square_size_(0) { }
+    square_size_(0)
+{
+}
 
-cv::Mat BoardReader::capture_to_mat() {
+cv::Mat BoardReader::capture_to_mat()
+{
     const uint8_t* buffer = capture_.get_buffer();
     if (!buffer)
         return cv::Mat();
 
     // ScreenCapture returns BGRA format pixels
-    cv::Mat img(capture_.get_capture_height(), capture_.get_capture_width(), CV_8UC4,
-                (void*) buffer, capture_.get_bytes_per_line());
+    cv::Mat img(
+      capture_.get_capture_height(), capture_.get_capture_width(), CV_8UC4, (void*) buffer,
+      capture_.get_bytes_per_line()
+    );
 
     // OpenCV matchTemplate often works better with BGR or grayscale
     cv::Mat bgr;
@@ -30,10 +35,8 @@ cv::Mat BoardReader::capture_to_mat() {
     return bgr;
 }
 
-void BoardReader::calibrate(int top_left_x,
-                            int top_left_y,
-                            int bottom_right_x,
-                            int bottom_right_y) {
+void BoardReader::calibrate(int top_left_x, int top_left_y, int bottom_right_x, int bottom_right_y)
+{
     board_tl_x_ = std::min(top_left_x, bottom_right_x);
     board_tl_y_ = std::min(top_left_y, bottom_right_y);
     board_br_x_ = std::max(top_left_x, bottom_right_x);
@@ -51,9 +54,11 @@ void BoardReader::calibrate(int top_left_x,
     square_size_   = sq_size;
     is_calibrated_ = true;
 
-    printf("[BoardReader] Calibrated: board at (%d, %d), "
-           "square size %d\n",
-           board_tl_x_, board_tl_y_, square_size_);
+    printf(
+      "[BoardReader] Calibrated: board at (%d, %d), "
+      "square size %d\n",
+      board_tl_x_, board_tl_y_, square_size_
+    );
 }
 
 void BoardReader::set_playing_white(bool white) { playing_white_ = white; }
@@ -64,7 +69,8 @@ bool BoardReader::is_calibrated() const { return is_calibrated_; }
 
 int BoardReader::get_square_size() const { return square_size_; }
 
-void BoardReader::get_square_center(int file, int rank, int& screen_x, int& screen_y) const {
+void BoardReader::get_square_center(int file, int rank, int& screen_x, int& screen_y) const
+{
     // file: 0=a, 7=h — rank: 0=1, 7=8
     // If playing white: a8 is at top-left
     int screen_file, screen_rank;
@@ -84,23 +90,26 @@ void BoardReader::get_square_center(int file, int rank, int& screen_x, int& scre
     screen_y = board_tl_y_ + (screen_rank * square_size_) + (square_size_ / 2);
 }
 
-Board BoardReader::read_board() {
+Board BoardReader::read_board()
+{
     Board board = {};
     if (!is_calibrated_)
         return board;
 
     // Increase margin to 16 to allow for up to 16 pixels of manual calibration error or window shift
     int margin = 16;
-    if (!capture_.capture_region(board_tl_x_ - margin, board_tl_y_ - margin,
-                                 (square_size_ * 8) + (margin * 2),
-                                 (square_size_ * 8) + (margin * 2)))
+    if (!capture_.capture_region(
+          board_tl_x_ - margin, board_tl_y_ - margin, (square_size_ * 8) + (margin * 2),
+          (square_size_ * 8) + (margin * 2)
+        ))
         return board;
     cv::Mat screen = capture_to_mat();
     if (screen.empty())
         return board;
 
     // Precompute templates to save massive amounts of CPU
-    struct PrecomputedTemplate {
+    struct PrecomputedTemplate
+    {
         cv::Mat templ_blur;
         cv::Mat search_mask_3c;
     };
@@ -127,12 +136,16 @@ Board BoardReader::read_board() {
 
         if (search_templ.cols != square_size_ || search_templ.rows != square_size_)
         {
-            cv::resize(search_templ, search_templ, cv::Size(square_size_, square_size_), 0, 0,
-                       cv::INTER_LINEAR);
+            cv::resize(
+              search_templ, search_templ, cv::Size(square_size_, square_size_), 0, 0,
+              cv::INTER_LINEAR
+            );
             if (!search_mask.empty())
             {
-                cv::resize(search_mask, search_mask, cv::Size(square_size_, square_size_), 0, 0,
-                           cv::INTER_NEAREST);
+                cv::resize(
+                  search_mask, search_mask, cv::Size(square_size_, square_size_), 0, 0,
+                  cv::INTER_NEAREST
+                );
             }
         }
 
@@ -209,8 +222,9 @@ Board BoardReader::read_board() {
                 cv::Mat result;
                 if (!pt.search_mask_3c.empty())
                 {
-                    cv::matchTemplate(square_blur, pt.templ_blur, result, cv::TM_SQDIFF_NORMED,
-                                      pt.search_mask_3c);
+                    cv::matchTemplate(
+                      square_blur, pt.templ_blur, result, cv::TM_SQDIFF_NORMED, pt.search_mask_3c
+                    );
                 }
                 else
                 {
@@ -239,7 +253,8 @@ Board BoardReader::read_board() {
             {
                 printf(
                   "[BoardReader] Debug: square (0,0) ROI=(%d,%d %dx%d) best_match = %f, best_piece = %d\n",
-                  roi_x, roi_y, roi_w, roi_h, best_match, (int) best_piece);
+                  roi_x, roi_y, roi_w, roi_h, best_match, (int) best_piece
+                );
             }
 
             board[rank][file] = best_piece;
@@ -253,7 +268,8 @@ Board BoardReader::read_board() {
     return board;
 }
 
-char BoardReader::piece_to_fen(Piece p) {
+char BoardReader::piece_to_fen(Piece p)
+{
     switch (p)
     {
     case Piece::WHITE_PAWN :

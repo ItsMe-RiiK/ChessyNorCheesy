@@ -10,7 +10,8 @@
  * Provides high-level mouse control (absolute move, click, drag)
  * using the X11 XTest extension.
  */
-class X11Mouse {
+class X11Mouse
+{
    public:
     X11Mouse();
     ~X11Mouse();

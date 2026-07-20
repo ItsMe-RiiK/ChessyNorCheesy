@@ -12,12 +12,14 @@ GameState::GameState() :
     white_castle_king_(true),
     white_castle_queen_(true),
     black_castle_king_(true),
-    black_castle_queen_(true) {
+    black_castle_queen_(true)
+{
     setup_initial_board();
     prev_board_ = board_;
 }
 
-void GameState::reset() {
+void GameState::reset()
+{
     setup_initial_board();
     prev_board_    = board_;
     board_changed_ = false;
@@ -33,7 +35,8 @@ void GameState::reset() {
     en_passant_square_.clear();
 }
 
-void GameState::setup_initial_board() {
+void GameState::setup_initial_board()
+{
     // Clear board
     for (auto& row : board_)
         row.fill(Piece::EMPTY);
@@ -71,7 +74,8 @@ void GameState::set_playing_white(bool white) { playing_white_ = white; }
 
 bool GameState::is_playing_white() const { return playing_white_; }
 
-bool GameState::update(const Board& detected_board) {
+bool GameState::update(const Board& detected_board)
+{
     bool changed = false;
     for (int r = 0; r < 8; r++)
     {
@@ -81,10 +85,12 @@ bool GameState::update(const Board& detected_board) {
             bool was_empty = (board_[r][f] == Piece::EMPTY);
             bool now_empty = (detected_board[r][f] == Piece::EMPTY);
 
-            bool was_white = (!was_empty && board_[r][f] >= Piece::WHITE_PAWN
-                              && board_[r][f] <= Piece::WHITE_KING);
-            bool now_white = (detected_board[r][f] >= Piece::WHITE_PAWN
-                              && detected_board[r][f] <= Piece::WHITE_KING);
+            bool was_white =
+              (!was_empty && board_[r][f] >= Piece::WHITE_PAWN
+               && board_[r][f] <= Piece::WHITE_KING);
+            bool now_white =
+              (detected_board[r][f] >= Piece::WHITE_PAWN
+               && detected_board[r][f] <= Piece::WHITE_KING);
 
             if (was_empty != now_empty || (!was_empty && !now_empty && was_white != now_white))
             {
@@ -106,8 +112,9 @@ bool GameState::update(const Board& detected_board) {
             // Apply the move to our tracked board
             apply_move(last_move_);
 
-            printf("[GameState] Move detected: %s (FEN: %s)\n", last_move_.c_str(),
-                   to_fen().c_str());
+            printf(
+              "[GameState] Move detected: %s (FEN: %s)\n", last_move_.c_str(), to_fen().c_str()
+            );
 
             board_changed_ = true;
         }
@@ -115,7 +122,8 @@ bool GameState::update(const Board& detected_board) {
         {
             // Could not isolate a single move
             printf(
-              "[GameState] ERROR: Move detection failed! The board changed, but no valid move was found.\n");
+              "[GameState] ERROR: Move detection failed! The board changed, but no valid move was found.\n"
+            );
             printf("[GameState] Emptied or filled squares were ambiguous.\n");
             // Do not update board_, we will try again next tick
             board_changed_ = false;
@@ -129,7 +137,8 @@ bool GameState::update(const Board& detected_board) {
     return board_changed_;
 }
 
-std::string GameState::detect_move(const Board& old_board, const Board& new_board) {
+std::string GameState::detect_move(const Board& old_board, const Board& new_board)
+{
     // Find squares that changed
     std::vector<std::pair<int, int>> emptied;  // squares that became empty
     std::vector<std::pair<int, int>> filled;   // squares that became occupied or changed piece
@@ -168,8 +177,10 @@ std::string GameState::detect_move(const Board& old_board, const Board& new_boar
     // DEBUG PRINT
     if (!emptied.empty() || !filled.empty() || !changed.empty())
     {
-        printf("[GameState] Debug: emptied=%zu, filled=%zu, changed=%zu\n", emptied.size(),
-               filled.size(), changed.size());
+        printf(
+          "[GameState] Debug: emptied=%zu, filled=%zu, changed=%zu\n", emptied.size(),
+          filled.size(), changed.size()
+        );
         for (auto& sq : emptied)
             printf("  Emptied: %s\n", square_to_uci(sq.first, sq.second).c_str());
         for (auto& sq : filled)
@@ -259,8 +270,10 @@ std::string GameState::detect_move(const Board& old_board, const Board& new_boar
     {
         if (emptied.size() + filled.size() + changed.size() > 6)
         {
-            printf("[GameState] Vision unstable (too many changed squares: %zu). Ignoring frame.\n",
-                   emptied.size() + filled.size() + changed.size());
+            printf(
+              "[GameState] Vision unstable (too many changed squares: %zu). Ignoring frame.\n",
+              emptied.size() + filled.size() + changed.size()
+            );
             return "";
         }
 
@@ -272,7 +285,8 @@ std::string GameState::detect_move(const Board& old_board, const Board& new_boar
     return "";  // Could not detect move
 }
 
-void GameState::apply_move(const std::string& uci_move) {
+void GameState::apply_move(const std::string& uci_move)
+{
     if (uci_move.size() < 4)
         return;
 
@@ -285,14 +299,18 @@ void GameState::apply_move(const std::string& uci_move) {
     Piece moving = board_[from_rank][from_file];
     if (moving == Piece::EMPTY)
     {
-        printf("[GameState] WARNING: Attempted to move an empty square! (%s). Ignoring.\n",
-               uci_move.c_str());
+        printf(
+          "[GameState] WARNING: Attempted to move an empty square! (%s). Ignoring.\n",
+          uci_move.c_str()
+        );
         return;
     }
 
     // Handle castling
-    if ((moving == Piece::WHITE_KING || moving == Piece::BLACK_KING)
-        && std::abs(to_file - from_file) == 2)
+    if (
+      (moving == Piece::WHITE_KING || moving == Piece::BLACK_KING)
+      && std::abs(to_file - from_file) == 2
+    )
     {
         // Move the rook too
         if (to_file > from_file)
@@ -310,8 +328,10 @@ void GameState::apply_move(const std::string& uci_move) {
     }
 
     // Handle en passant capture
-    if ((moving == Piece::WHITE_PAWN || moving == Piece::BLACK_PAWN) && from_file != to_file
-        && board_[to_rank][to_file] == Piece::EMPTY)
+    if (
+      (moving == Piece::WHITE_PAWN || moving == Piece::BLACK_PAWN) && from_file != to_file
+      && board_[to_rank][to_file] == Piece::EMPTY
+    )
     {
         // Remove the captured pawn
         board_[from_rank][to_file] = Piece::EMPTY;
@@ -346,8 +366,10 @@ void GameState::apply_move(const std::string& uci_move) {
 
     // Update en passant
     en_passant_square_.clear();
-    if ((moving == Piece::WHITE_PAWN && from_rank == 1 && to_rank == 3)
-        || (moving == Piece::BLACK_PAWN && from_rank == 6 && to_rank == 4))
+    if (
+      (moving == Piece::WHITE_PAWN && from_rank == 1 && to_rank == 3)
+      || (moving == Piece::BLACK_PAWN && from_rank == 6 && to_rank == 4)
+    )
     {
         int ep_rank        = (from_rank + to_rank) / 2;
         en_passant_square_ = square_to_uci(to_file, ep_rank);
@@ -356,8 +378,10 @@ void GameState::apply_move(const std::string& uci_move) {
     // Update castling rights
     update_castling(uci_move);
 
-    if (moving == Piece::WHITE_PAWN || moving == Piece::BLACK_PAWN
-        || board_[to_rank][to_file] != Piece::EMPTY)
+    if (
+      moving == Piece::WHITE_PAWN || moving == Piece::BLACK_PAWN
+      || board_[to_rank][to_file] != Piece::EMPTY
+    )
     {
         halfmove_clock_ = 0;
     }
@@ -374,7 +398,8 @@ void GameState::apply_move(const std::string& uci_move) {
     move_history_.push_back(uci_move);
 }
 
-void GameState::update_castling(const std::string& move) {
+void GameState::update_castling(const std::string& move)
+{
     int from_file, from_rank;
     if (!uci_to_square(move.substr(0, 2), from_file, from_rank))
         return;
@@ -402,7 +427,8 @@ void GameState::update_castling(const std::string& move) {
         black_castle_king_ = false;
 }
 
-std::string GameState::to_fen() const {
+std::string GameState::to_fen() const
+{
     std::string fen;
 
     // Piece placement (from rank 8 to rank 1)
@@ -461,7 +487,8 @@ std::string GameState::to_fen() const {
     return fen;
 }
 
-bool GameState::is_our_turn() const {
+bool GameState::is_our_turn() const
+{
     if (playing_white_)
         return white_to_move_;
     else
@@ -470,7 +497,8 @@ bool GameState::is_our_turn() const {
 
 std::string GameState::get_last_move() const { return last_move_; }
 
-std::string GameState::get_move_history() const {
+std::string GameState::get_move_history() const
+{
     std::string result;
     for (size_t i = 0; i < move_history_.size(); i++)
     {
@@ -483,14 +511,16 @@ std::string GameState::get_move_history() const {
 
 const Board& GameState::get_board() const { return board_; }
 
-std::string GameState::square_to_uci(int file, int rank) {
+std::string GameState::square_to_uci(int file, int rank)
+{
     std::string s;
     s += (char) ('a' + file);
     s += (char) ('1' + rank);
     return s;
 }
 
-bool GameState::uci_to_square(const std::string& uci, int& file, int& rank) {
+bool GameState::uci_to_square(const std::string& uci, int& file, int& rank)
+{
     if (uci.size() < 2)
         return false;
 

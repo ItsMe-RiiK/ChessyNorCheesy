@@ -19,7 +19,8 @@
  * Runs the game loop: capture screen → read board → detect changes →
  * query Stockfish → execute move via driver mouse.
  */
-class BotController {
+class BotController
+{
    public:
     BotController();
     ~BotController();
