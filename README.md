@@ -69,15 +69,16 @@ An automated script is provided to install all necessary dependencies for Arch, 
 <details>
 <summary><b>Option 1: Pre-compiled Releases (Recommended)</b></summary>
 
-Whenever a new version is released, an automated GitHub Action compiles it specifically for Arch Linux. You can download the latest `.tar.gz` archive directly from the [Releases page](https://github.com/ItsMe-RiiK/ChessyNotCheesy/releases).
+Whenever a new version is released, an automated GitHub Action compiles it and packages it. You can download the latest `.tar.gz` archive directly from the [Releases page](https://github.com/ItsMe-RiiK/ChessyNotCheesy/releases).
 
 1. Download `ChessyNotCheesy-linux-x86_64.tar.gz`.
 2. Extract the archive.
-3. Run the launcher:
+3. Run the installer script to set up dependencies, udev permissions (so the bot doesn't need `sudo`), and create a Desktop shortcut:
 ```bash
 cd ChessyNotCheesy-Release
-./launcher.sh
+./install.sh
 ```
+4. You can now launch **ChessyNotCheesy** purely from your Desktop application menu like a standard GUI app!
 </details>
 
 <details>
@@ -94,37 +95,27 @@ cp .env.example .env
 ```
 *Edit `.env` and configure your `SUDO_PASS`. This file is ignored by Git and remains strictly local.*
 
-3. Run the included launcher script. It will automatically compile the project on the first run and start the bot:
+3. Run the installer to setup dependencies and udev permissions:
+```bash
+./scripts/install.sh
+```
+4. Compile the project:
+```bash
+make -j$(nproc)
+```
+5. Launch the bot:
 ```bash
 ./launcher.sh
 ```
-*Note: The launcher may prompt for your `sudo` password to run `chmod 666 /dev/input/event*` so it can listen to global keyboard hotkeys while minimized.*
 </details>
 
 ---
-## 🖥️ (Optional) Desktop Integration
-<details>
-<summary><b>Desktop Integration</b></summary>
-If you prefer launching ChessyNotCheesy directly from your application menu or desktop, we provide convenient scripts:
+## 🖥️ Application Scripts
+We provide convenient scripts to manage your installation (bundled in the root folder of releases, or in the `scripts/` folder if building from source):
 
-- **Install to Desktop:**
-  ```bash
-  ./scripts/install.sh
-  ```
-  *Creates a desktop shortcut. It launches in a terminal window so you can easily view engine evaluation logs and enter any required sudo passwords.*
-
-- **Update the App:**
-  ```bash
-  ./scripts/update_app.sh
-  ```
-  *Automatically pulls the latest changes from GitHub, recompiles the bot, and verifies dependencies.*
-
-- **Uninstall from Desktop:**
-  ```bash
-  ./scripts/uninstall.sh
-  ```
-  *Removes the shortcut from your desktop and application menus.*
-</details>
+- **Install/Setup (`install.sh`)**: Installs Arch Linux dependencies, configures `udev` rules so the bot can listen to global hotkeys without requiring `sudo` on every launch, and creates a pure GUI desktop shortcut.
+- **Update (`update.sh`)**: Automatically fetches the latest `.tar.gz` release from GitHub, downloads it, extracts it, and overwrites your current installation seamlessly.
+- **Uninstall (`uninstall.sh`)**: Removes the desktop shortcuts and cleans up the `udev` rules from your system.
 
 ---
 ## 🎮 How to Use
