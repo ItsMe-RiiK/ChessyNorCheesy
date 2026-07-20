@@ -56,12 +56,12 @@ To compile and run this project, the following packages must be installed:
 - `gtk3`
 - `x11` and `xtst` (libxtst-dev)
 
-**Automated Installation:**
-An automated script is provided to install all necessary dependencies for Arch, Debian/Ubuntu, and Fedora systems:
+**Automated Installation (Arch Linux Only):**
+An automated script is provided to install all necessary dependencies and system permissions:
 ```bash
-./scripts/install_dependencies.sh
+./scripts/install.sh
 ```
-*(You may be prompted for your sudo password to install the packages).*
+*(If you are on Debian/Ubuntu or Fedora, you must manually install the equivalent packages (`build-essential`, `libopencv-dev`, `libxtst-dev`, etc) and create your own udev rules).*
 </details>
 
 ---
