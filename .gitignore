@@ -11,3 +11,4 @@ template/
 
 chesscom.md
 compile_commands.json
+.env
