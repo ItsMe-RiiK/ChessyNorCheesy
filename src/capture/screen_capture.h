@@ -42,12 +42,6 @@ public:
   // Returns pointer to pixel data (BGRA format, row-major)
   bool capture_region(int x, int y, int width, int height);
 
-  // Get a single pixel color at screen coordinates
-  Pixel get_pixel(int x, int y);
-
-  // Get pixel from the last captured region (relative to capture origin)
-  Pixel get_captured_pixel(int rel_x, int rel_y) const;
-
   // Get raw buffer from last capture
   const uint8_t *get_buffer() const;
   int get_capture_width() const;

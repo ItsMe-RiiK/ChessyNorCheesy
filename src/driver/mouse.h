@@ -18,16 +18,12 @@ public:
 
   bool open();
   void close();
-  bool is_open() const;
 
   // Absolute positioning — move cursor to exact screen coordinate
   bool move_to(int x, int y);
 
   // Click at position (move + button press + delay + button release)
   bool click(int x, int y);
-
-  // Right-click at position
-  bool right_click(int x, int y);
 
   // Drag from one position to another (press at src, move to dst, release)
   bool drag(int from_x, int from_y, int to_x, int to_y);

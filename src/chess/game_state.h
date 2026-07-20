@@ -36,9 +36,6 @@ public:
   // Is it your turn to move?
   bool is_our_turn() const;
 
-  // Has the board changed since last check?
-  bool has_changed() const;
-
   // Get the last detected move in UCI format (e.g., "e2e4")
   std::string get_last_move() const;
 
@@ -47,12 +44,6 @@ public:
 
   // Get the current board
   const Board &get_board() const;
-
-  // Get move count (full moves)
-  int get_move_count() const;
-
-  // Detect if the game appears to be over (no pieces changed for a while)
-  bool is_game_over() const;
 
   // Apply a UCI move to the internal board (e.g., "e2e4")
   void apply_move(const std::string &uci_move);

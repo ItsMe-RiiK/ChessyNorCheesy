@@ -75,15 +75,6 @@ bool ThemeManager::load_piece_theme(const std::string &piece_name)
   return false;
 }
 
-bool ThemeManager::save_default_config(const std::string &board_name, const std::string &piece_name) const
-{
-  std::ofstream out("themes/default.cfg");
-  if (!out.is_open())
-    return false;
-  out << board_name << "\n" << piece_name << "\n";
-  return true;
-}
-
 bool ThemeManager::load_default_config(std::string &out_board_name, std::string &out_piece_name) const
 {
   std::ifstream in("themes/default.cfg");
@@ -127,11 +118,6 @@ cv::Mat ThemeManager::get_mask(int piece_id) const
 cv::Mat ThemeManager::get_board_corner_template() const
 {
   return board_corner_;
-}
-
-std::vector<std::string> ThemeManager::get_available_boards() const
-{
-  return scan_directory("themes/chessboard");
 }
 
 std::vector<std::string> ThemeManager::get_available_pieces() const

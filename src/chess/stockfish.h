@@ -27,15 +27,9 @@ public:
   // Set position from FEN string
   bool set_position(const std::string &fen);
 
-  // Set position from move list (from start position)
-  bool set_position_moves(const std::string &moves);
-
   // Get best move at given depth
   // Returns move in UCI format (e.g., "e2e4", "e7e8q" for promotion)
   std::string get_best_move(int depth = 20);
-
-  // Get best move with time limit (milliseconds)
-  std::string get_best_move_time(int time_ms = 1000);
 
   // Configure engine options
   bool set_option(const std::string &name, const std::string &value);

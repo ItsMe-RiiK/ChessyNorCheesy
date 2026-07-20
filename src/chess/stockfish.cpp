@@ -260,26 +260,6 @@ bool StockfishEngine::set_position(const std::string &fen)
   return true;
 }
 
-bool StockfishEngine::set_position_moves(const std::string &moves)
-{
-  // Stop any ongoing search before setting a new position
-  send_command("stop");
-  send_command("isready");
-  wait_for("readyok", 5000);
-
-  std::string cmd = "position startpos";
-  if (!moves.empty())
-  {
-    cmd += " moves " + moves;
-  }
-  if (!send_command(cmd))
-    return false;
-
-  send_command("isready");
-  wait_for("readyok", 5000);
-  return true;
-}
-
 std::string StockfishEngine::get_best_move(int depth)
 {
   last_score_ = 0;
@@ -302,28 +282,6 @@ std::string StockfishEngine::get_best_move(int depth)
   }
 
   // Parse "bestmove e2e4 ponder e7e5"
-  std::istringstream iss(response);
-  std::string token, move;
-
-  iss >> token; // "bestmove"
-  iss >> move; // "e2e4"
-
-  return move;
-}
-
-std::string StockfishEngine::get_best_move_time(int time_ms)
-{
-  last_score_ = 0;
-  last_pv_.clear();
-
-  std::string cmd = "go movetime " + std::to_string(time_ms);
-  send_command(cmd);
-
-  std::string response = wait_for("bestmove", time_ms + 5000);
-
-  if (response.empty())
-    return "";
-
   std::istringstream iss(response);
   std::string token, move;
 

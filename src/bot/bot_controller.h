@@ -49,13 +49,6 @@ public:
   void set_move_delay(int min_ms, int max_ms);
   void set_poll_interval_ms(int ms);
 
-  // Status getters for GUI
-  std::string get_current_fen() const;
-  std::string get_last_move() const;
-  std::string get_move_history() const;
-  std::string get_engine_eval() const;
-  std::string get_status() const;
-  int get_stockfish_depth() const;
   void set_status(const std::string &status);
 
   // Callbacks for GUI updates

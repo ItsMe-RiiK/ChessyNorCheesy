@@ -457,11 +457,6 @@ bool GameState::is_our_turn() const
     return !white_to_move_;
 }
 
-bool GameState::has_changed() const
-{
-  return board_changed_;
-}
-
 std::string GameState::get_last_move() const
 {
   return last_move_;
@@ -482,30 +477,6 @@ std::string GameState::get_move_history() const
 const Board &GameState::get_board() const
 {
   return board_;
-}
-
-int GameState::get_move_count() const
-{
-  return fullmove_number_;
-}
-
-bool GameState::is_game_over() const
-{
-  // Simple heuristic: if no kings are detected, game might be over
-  bool white_king = false, black_king = false;
-
-  for (int r = 0; r < 8; r++)
-  {
-    for (int f = 0; f < 8; f++)
-    {
-      if (board_[r][f] == Piece::WHITE_KING)
-        white_king = true;
-      if (board_[r][f] == Piece::BLACK_KING)
-        black_king = true;
-    }
-  }
-
-  return !white_king || !black_king;
 }
 
 std::string GameState::square_to_uci(int file, int rank)

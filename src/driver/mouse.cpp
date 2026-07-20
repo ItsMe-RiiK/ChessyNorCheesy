@@ -49,11 +49,6 @@ void X11Mouse::close()
   }
 }
 
-bool X11Mouse::is_open() const
-{
-  return display_ != nullptr;
-}
-
 int X11Mouse::random_range(int min_val, int max_val)
 {
   if (min_val >= max_val)
@@ -103,21 +98,6 @@ bool X11Mouse::click(int x, int y)
   random_delay(click_delay_min_ms_, click_delay_max_ms_);
 
   return button_release(BTN_LEFT);
-}
-
-bool X11Mouse::right_click(int x, int y)
-{
-  if (!move_to(x, y))
-    return false;
-
-  random_delay(move_delay_min_ms_, move_delay_max_ms_);
-
-  if (!button_press(BTN_RIGHT))
-    return false;
-
-  random_delay(click_delay_min_ms_, click_delay_max_ms_);
-
-  return button_release(BTN_RIGHT);
 }
 
 bool X11Mouse::drag(int from_x, int from_y, int to_x, int to_y)
