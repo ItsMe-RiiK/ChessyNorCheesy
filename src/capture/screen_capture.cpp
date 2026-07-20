@@ -171,58 +171,12 @@ bool ScreenCapture::capture_region(int x, int y, int width, int height)
   // an infinite linked list of events, eventually crashing the system with OOM!
   XSync(display_, false);
   XEvent ev;
-  while (XCheckMaskEvent(display_, ~0L, &ev)) {
+  while (XCheckMaskEvent(display_, ~0L, &ev))
+  {
     // discard
   }
 
   return true;
-}
-
-Pixel ScreenCapture::get_pixel(int x, int y)
-{
-  Pixel p = {0, 0, 0};
-
-  if (!display_)
-    return p;
-
-  // Capture a 1x1 region
-  if (!alloc_shm(1, 1))
-    return p;
-
-  cap_x_ = x;
-  cap_y_ = y;
-  cap_width_ = 1;
-  cap_height_ = 1;
-
-  // Use XGetPixel for single pixel (faster than XShm for 1px)
-  XImage *img = XGetImage(display_, root_, x, y, 1, 1, AllPlanes, ZPixmap);
-  if (!img)
-    return p;
-
-  unsigned long pixel = XGetPixel(img, 0, 0);
-  p.r = (pixel >> 16) & 0xFF;
-  p.g = (pixel >> 8) & 0xFF;
-  p.b = pixel & 0xFF;
-
-  XDestroyImage(img);
-  return p;
-}
-
-Pixel ScreenCapture::get_captured_pixel(int rel_x, int rel_y) const
-{
-  Pixel p = {0, 0, 0};
-
-  if (!ximage_ || rel_x < 0 || rel_y < 0 || rel_x >= cap_width_ || rel_y >= cap_height_)
-    return p;
-
-  unsigned long pixel = XGetPixel(ximage_, rel_x, rel_y);
-
-  // X11 pixel format is typically BGRX or BGRA in ZPixmap
-  p.r = (pixel >> 16) & 0xFF;
-  p.g = (pixel >> 8) & 0xFF;
-  p.b = pixel & 0xFF;
-
-  return p;
 }
 
 const uint8_t *ScreenCapture::get_buffer() const
