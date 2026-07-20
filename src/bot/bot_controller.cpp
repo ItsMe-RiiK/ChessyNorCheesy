@@ -237,8 +237,8 @@ void BotController::bot_loop()
       last_seen_board_ = detected_board;
     }
 
-    // Only process the board if it has remained perfectly stable for 2 consecutive frames (ignores mid-air gliding pieces)
-    if (stable_frames_ == 2)
+    // Only process the board if it has remained perfectly stable for more than 3 consecutive frames (ignores mid-air gliding pieces)
+    if (stable_frames_ >= 3)
     {
       bool changed = game_state_.update(detected_board);
 
