@@ -30,7 +30,7 @@ Unlike traditional chess bots or browser extensions that inject JavaScript, read
   - Live engine evaluation (e.g., `eval: +1.20`).
   - Adjustable Stockfish calculation depth (defaults to 5).
   - Configurable artificial delay between moves to mimic human thinking time.
-  - Global Hotkeys: `` ` `` to start/stop, `C` to calibrate, `R` to reset game memory, `1` for White, `2` for Black.
+  - Global Hotkeys: `` ` `` to start/stop, `C` to calibrate, `R` to reset game memory, `1` for White, `2` for Black, `LEFTSHIFT + -/+` to adjust min mouse delay, `RIGHTSHIFT + -/+` to adjust max mouse delay.
 - **Robust State Engine**: Handles move parsing, en-passant, and castling rules seamlessly without parsing algebraic notation from the website DOM.
 
 ---
