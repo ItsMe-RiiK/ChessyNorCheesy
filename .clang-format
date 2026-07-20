@@ -9,6 +9,7 @@ AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortEnumsOnASingleLine: false
 AllowShortIfStatementsOnASingleLine: false
+
 BreakTemplateDeclarations: Yes
 BasedOnStyle: WebKit
 BitFieldColonSpacing: After
@@ -23,16 +24,23 @@ BraceWrapping:
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: AfterColon
 BreakStringLiterals: false
+
 ColumnLimit: 100
 ContinuationIndentWidth: 2
 Cpp11BracedListStyle: true
+
 IndentGotoLabels: false
 IndentPPDirectives: BeforeHash
 IndentWidth: 4
+
 MaxEmptyLinesToKeep: 2
+
 NamespaceIndentation: None
+
 PackConstructorInitializers: Never
+
 ReflowComments: false
+
 SortIncludes: false
 SortUsingDeclarations: false
 SpaceAfterCStyleCast: true
