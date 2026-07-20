@@ -24,9 +24,17 @@ bool StockfishEngine::start(const std::string &path)
   int to_engine[2]; // parent writes → child reads (stdin)
   int from_engine[2]; // child writes → parent reads (stdout)
 
-  if (pipe(to_engine) < 0 || pipe(from_engine) < 0)
+  if (pipe(to_engine) < 0)
   {
     perror("[Stockfish] pipe() failed");
+    return false;
+  }
+
+  if (pipe(from_engine) < 0)
+  {
+    perror("[Stockfish] pipe() failed");
+    close(to_engine[0]);
+    close(to_engine[1]);
     return false;
   }
 
