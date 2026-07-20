@@ -578,6 +578,13 @@ static GtkWidget* create_label(const char* text, const char* css_class) {
 }
 
 static void activate(GtkApplication* app, gpointer user_data) {
+    // Prevent double windows if second instance tries to launch
+    GList* windows = gtk_application_get_windows(app);
+    if (windows != NULL) {
+        gtk_window_present(GTK_WINDOW(windows->data));
+        return;
+    }
+
     GtkWidget* window = gtk_application_window_new(app);
     gtk_window_set_title(GTK_WINDOW(window), "ChessyNotCheesy");
     gtk_window_set_default_size(GTK_WINDOW(window), 480, 460);
@@ -786,8 +793,8 @@ int run_gui(int argc, char** argv, BotController& bot_ref, std::atomic<bool>& bo
     std::thread input_thread(input_listener_thread);
     input_thread.detach();
 
-    // Launch GTK application
-    GtkApplication* app = gtk_application_new("org.riik.ChessyNotCheesy", G_APPLICATION_NON_UNIQUE);
+    // Launch GTK application (flags=0 ensures single-instance behavior)
+    GtkApplication* app = gtk_application_new("org.riik.ChessyNotCheesy", G_APPLICATION_FLAGS_NONE);
     g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
     int status = g_application_run(G_APPLICATION(app), argc, argv);
     g_object_unref(app);
