@@ -33,7 +33,7 @@ fi
 
 # Update to latest version
 # echo -e "${CYAN}[ChessyNotCheesy] Updating Stockfish to latest version...${NC}"
-# echo 1234 | sudo -S pacman -Sy stockfish --noconfirm 2>/dev/null || true
+# sudo -S pacman -Sy stockfish --noconfirm 2>/dev/null || true
 
 # Print version
 echo -e "${GREEN}[ChessyNotCheesy] Current Stockfish version:${NC}"
