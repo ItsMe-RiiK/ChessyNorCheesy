@@ -39,5 +39,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: ChessyNotCheesy-linux-x86_64.tar.gz
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

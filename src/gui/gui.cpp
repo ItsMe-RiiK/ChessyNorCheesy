@@ -125,6 +125,11 @@ static gboolean reset_game_idle(gpointer data)
 {
   if (g_bot)
   {
+    if (g_ply_count == 0)
+    {
+      bot.set_status("Game is already at the starting position.");
+      return G_SOURCE_REMOVE;
+    }
     bot.reset_game();
     bot.set_status("Game memory reset to starting position.");
     g_ply_count = 0;
@@ -191,7 +196,18 @@ static void on_calibrate_clicked(GtkWidget *widget, gpointer data)
   if (calib_state == 0)
   {
     calib_state = 1;
-    gtk_button_set_label(GTK_BUTTON(widget), "Click TOP-LEFT (a8)");
+    if (calibrate_btn) gtk_button_set_label(GTK_BUTTON(calibrate_btn), "Click TOP-LEFT (a8)");
+    gtk_label_set_text(GTK_LABEL(status_label), "CALIBRATING: Click the TOP-LEFT corner of the board (a8 square)");
+  }
+  else if (calib_state == 3)
+  {
+    calib_state = 4;
+    gtk_label_set_text(GTK_LABEL(status_label), "Confirm recalibration? Press 'C' or click Calibrate again to confirm.");
+  }
+  else if (calib_state == 4)
+  {
+    calib_state = 1;
+    if (calibrate_btn) gtk_button_set_label(GTK_BUTTON(calibrate_btn), "Click TOP-LEFT (a8)");
     gtk_label_set_text(GTK_LABEL(status_label), "CALIBRATING: Click the TOP-LEFT corner of the board (a8 square)");
   }
 }
@@ -391,7 +407,7 @@ static void input_listener_thread()
               else if (calib_state == 2)
               {
                 bot.calibrate(calib_x1, calib_y1, root_x, root_y);
-                calib_state = 0;
+                calib_state = 3;
 
                 auto *upd = new StatusUpdate{"Board calibrated! Ready to start."};
                 g_idle_add(update_status_idle, upd);
