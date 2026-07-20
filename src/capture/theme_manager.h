@@ -22,7 +22,7 @@ public:
   bool load_piece_theme(const std::string &piece_name);
 
   // Default configuration handling
-  bool save_default_config(const std::string &board_name, const std::string &piece_name) const;
+
   bool load_default_config(std::string &out_board_name, std::string &out_piece_name) const;
 
   // Get active templates
@@ -31,19 +31,10 @@ public:
   cv::Mat get_board_corner_template() const;
 
   // Discover available themes in the file system
-  std::vector<std::string> get_available_boards() const;
+
   std::vector<std::string> get_available_pieces() const;
 
   // Currently loaded themes
-  std::string get_active_board_name() const
-  {
-    return active_board_;
-  }
-
-  std::string get_active_piece_name() const
-  {
-    return active_piece_;
-  }
 
 private:
   std::string active_board_;

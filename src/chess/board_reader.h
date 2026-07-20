@@ -7,7 +7,6 @@
 #include <array>
 #include <functional>
 #include <opencv2/opencv.hpp>
-#include <string>
 
 /*
  * BoardReader — Reads the chess board state from screen pixels
@@ -64,9 +63,6 @@ public:
   // Convert piece to FEN character
   static char piece_to_fen(Piece p);
 
-  // Convert board to printable string (for debugging)
-  static std::string board_to_string(const Board &board);
-
   // Calibration callback — set this to receive calibration click coordinates
   std::function<void(int, int)> on_calibration_click;
 
@@ -82,6 +78,9 @@ private:
   int board_br_x_;
   int board_br_y_;
   int square_size_;
+
+  cv::Mat prev_screen_;
+  Board prev_board_;
 
   // OpenCV helper for converting ScreenCapture BGRA buffer to cv::Mat
   cv::Mat capture_to_mat();

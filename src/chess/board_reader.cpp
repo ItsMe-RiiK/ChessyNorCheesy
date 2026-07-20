@@ -160,6 +160,7 @@ Board BoardReader::read_board()
   }
 
   // For every square, we crop it and match against all piece templates
+  bool has_prev = !prev_screen_.empty() && prev_screen_.size() == screen.size();
   for (int rank = 0; rank < 8; rank++)
   {
     for (int file = 0; file < 8; file++)
@@ -180,6 +181,20 @@ Board BoardReader::read_board()
 
       cv::Rect roi(roi_x, roi_y, roi_w, roi_h);
       cv::Mat square = screen(roi).clone();
+
+      if (has_prev)
+      {
+        cv::Mat diff;
+        cv::absdiff(square, prev_screen_(roi), diff);
+        cv::cvtColor(diff, diff, cv::COLOR_BGR2GRAY);
+        int changed_pixels = cv::countNonZero(diff > 5);
+        // If less than 10 pixels changed, skip heavy template matching
+        if (changed_pixels < 10)
+        {
+          board[rank][file] = prev_board_[rank][file];
+          continue;
+        }
+      }
 
       cv::Mat square_blur;
       cv::GaussianBlur(square, square_blur, cv::Size(3, 3), 0);
@@ -239,6 +254,9 @@ Board BoardReader::read_board()
     }
   }
 
+  prev_screen_ = screen.clone();
+  prev_board_ = board;
+
   // Debug: Save the full board region that we are analyzing
   return board;
 }
@@ -274,19 +292,4 @@ char BoardReader::piece_to_fen(Piece p)
   default:
     return '.';
   }
-}
-
-std::string BoardReader::board_to_string(const Board &board)
-{
-  std::string s;
-  for (int rank = 7; rank >= 0; rank--)
-  {
-    for (int file = 0; file < 8; file++)
-    {
-      s += piece_to_fen(board[rank][file]);
-      s += ' ';
-    }
-    s += '\n';
-  }
-  return s;
 }

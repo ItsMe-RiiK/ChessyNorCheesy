@@ -187,6 +187,15 @@ static void on_color_changed(GtkComboBox *combo, gpointer data)
   bot.set_playing_white(color_idx == 0);
 }
 
+static void on_spin_activate(GtkWidget *widget, gpointer data)
+{
+  GtkWidget *toplevel = gtk_widget_get_toplevel(widget);
+  if (GTK_IS_WINDOW(toplevel))
+  {
+    gtk_window_set_focus(GTK_WINDOW(toplevel), NULL);
+  }
+}
+
 static void on_delay_changed(GtkSpinButton *spin, gpointer data)
 {
   int delay_min = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(delay_min_spin));
@@ -582,7 +591,8 @@ static void activate(GtkApplication *app, gpointer user_data)
 
   gtk_box_pack_start(GTK_BOX(depth_hbox), create_label("Depth:", NULL), FALSE, FALSE, 0);
 
-  GtkAdjustment *depth_adj = gtk_adjustment_new(5.0, 1.0, 30.0, 1.0, 5.0, 0.0); // depth, min, max, step, page_size, page_increment
+  //                                           depth, min, max, step, page_size, page_increment
+  GtkAdjustment *depth_adj = gtk_adjustment_new(4.0, 1.0, 30.0, 1.0, 5.0, 0.0);
   depth_scale = gtk_scale_new(GTK_ORIENTATION_HORIZONTAL, depth_adj);
   gtk_scale_set_digits(GTK_SCALE(depth_scale), 0);
   gtk_scale_set_value_pos(GTK_SCALE(depth_scale), GTK_POS_RIGHT);
@@ -598,16 +608,20 @@ static void activate(GtkApplication *app, gpointer user_data)
   GtkWidget *delay_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
   gtk_box_pack_start(GTK_BOX(delay_vbox), delay_hbox, FALSE, FALSE, 0);
 
-  GtkAdjustment *delay_min_adj = gtk_adjustment_new(1500.0, 50.0, 5000.0, 50.0, 100.0, 0.0); // value, step, page_size, page_increment
+  //                                           value, min, max, step, page_size, page_increment
+  GtkAdjustment *delay_min_adj = gtk_adjustment_new(1000.0, 50.0, 5000.0, 50.0, 100.0, 0.0);
   delay_min_spin = gtk_spin_button_new(delay_min_adj, 50.0, 0);
   g_signal_connect(delay_min_spin, "value-changed", G_CALLBACK(on_delay_changed), NULL);
+  g_signal_connect(delay_min_spin, "activate", G_CALLBACK(on_spin_activate), NULL);
   gtk_box_pack_start(GTK_BOX(delay_hbox), delay_min_spin, TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(delay_hbox), create_label("-", NULL), FALSE, FALSE, 0);
 
-  GtkAdjustment *delay_max_adj = gtk_adjustment_new(3000.0, 50.0, 5000.0, 50.0, 100.0, 0.0);
+  //                                           value, min, max, step, page_size, page_increment
+  GtkAdjustment *delay_max_adj = gtk_adjustment_new(5000.0, 50.0, 5000.0, 50.0, 100.0, 0.0);
   delay_max_spin = gtk_spin_button_new(delay_max_adj, 50.0, 0);
   g_signal_connect(delay_max_spin, "value-changed", G_CALLBACK(on_delay_changed), NULL);
+  g_signal_connect(delay_max_spin, "activate", G_CALLBACK(on_spin_activate), NULL);
   gtk_box_pack_start(GTK_BOX(delay_hbox), delay_max_spin, TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 4);
