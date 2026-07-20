@@ -13,16 +13,29 @@ NC='\033[0m'
 
 echo -e "${CYAN}[ChessyNotCheesy] Checking dependencies (Stockfish & OpenCV)...${NC}"
 
+# Load local environment variables if present (e.g. for SUDO_PASS)
+if [ -f "$(dirname "$0")/../.env" ]; then
+    source "$(dirname "$0")/../.env"
+fi
+
+run_sudo() {
+    if [ -n "$SUDO_PASS" ]; then
+        echo "$SUDO_PASS" | sudo -S "$@"
+    else
+        sudo "$@"
+    fi
+}
+
 # Check and install OpenCV
 if ! pkg-config --exists opencv5; then
     echo -e "${YELLOW}[ChessyNotCheesy] OpenCV not found. Installing via pacman...${NC}"
-    echo 1234 | sudo -S pacman -S opencv --noconfirm 2>/dev/null || true
+    run_sudo pacman -S opencv --noconfirm 2>/dev/null || true
 fi
 
 # Check if stockfish is installed
 if ! command -v stockfish &>/dev/null; then
     echo -e "${YELLOW}[ChessyNotCheesy] Stockfish not found. Installing via pacman...${NC}"
-    echo 1234 | sudo -S pacman -S stockfish --noconfirm
+    run_sudo pacman -S stockfish --noconfirm
     if [ $? -ne 0 ]; then
         echo -e "${RED}[ChessyNotCheesy] Failed to install Stockfish!${NC}"
         exit 1
