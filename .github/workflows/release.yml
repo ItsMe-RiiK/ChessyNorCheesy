@@ -1,0 +1,43 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Release
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install System Dependencies
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm base-devel git gtk3 opencv stockfish libxtst
+
+      - name: Build Project
+        run: |
+          make clean
+          make
+
+      - name: Package Release
+        run: |
+          mkdir -p ChessyNotCheesy-Release
+          cp -r release/ChessyNotCheesy images themes scripts launcher.sh README.md ChessyNotCheesy-Release/
+          tar -czvf ChessyNotCheesy-linux-x86_64.tar.gz ChessyNotCheesy-Release
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ChessyNotCheesy-linux-x86_64.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
