@@ -20,26 +20,15 @@ echo -e "${CYAN}========================================${NC}"
 echo -e "${CYAN}  ChessyNotCheesy Launcher${NC}"
 echo -e "${CYAN}========================================${NC}"
 
-# Step 1: Update Stockfish
-echo ""
-bash "$SCRIPT_DIR/scripts/update_stockfish.sh"
-
-# Step 3: Build if needed
 if [ ! -f "$BIN" ]; then
-    echo ""
-    echo -e "${YELLOW}[ChessyNotCheesy] Binary not found. Building...${NC}"
-    make -C "$SCRIPT_DIR"
+    echo -e "${RED}[ChessyNotCheesy] Binary not found at $BIN. Please ensure you ran install.sh or downloaded a valid release.${NC}"
+    # Wait for user to read message before closing if launched from terminal (if applicable)
+    sleep 3
+    exit 1
 fi
 
-# Step 4: Grant permissions to input events for X11/Mouse if needed
-echo -e "${CYAN}[ChessyNotCheesy] Checking event permissions (may prompt for sudo)...${NC}"
-sudo chmod 666 /dev/input/event* 2>/dev/null || true
-
-# Step 5: Launch the bot
-echo ""
-echo -e "${GREEN}[ChessyNotCheesy] Launching ChessyNotCheesy...${NC}"
+echo -e "${GREEN}[ChessyNotCheesy] Launching...${NC}"
 echo -e "${CYAN}========================================${NC}"
-echo ""
 
 cd "$SCRIPT_DIR"
 "$BIN" "$@"
