@@ -22,7 +22,7 @@ jobs:
       - name: Install System Dependencies
         run: |
           pacman -Syu --noconfirm
-          pacman -S --noconfirm base-devel git gtk3 opencv stockfish libxtst
+          pacman -S --noconfirm base-devel git gtk3 opencv libxtst
 
       - name: Build Project
         run: |
