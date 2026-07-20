@@ -34,6 +34,7 @@ jobs:
           mkdir -p ChessyNotCheesy-Release
           cp -r release/ChessyNotCheesy images themes scripts launcher.sh README.md ChessyNotCheesy-Release/
           cp scripts/install.sh scripts/uninstall.sh scripts/update.sh ChessyNotCheesy-Release/
+          rm -f ChessyNotCheesy-Release/scripts/install.sh ChessyNotCheesy-Release/scripts/uninstall.sh ChessyNotCheesy-Release/scripts/update.sh
           tar -czvf ChessyNotCheesy-linux-x86_64.tar.gz ChessyNotCheesy-Release
 
       - name: Publish GitHub Release
