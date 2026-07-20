@@ -35,8 +35,8 @@ curl -L -o "$TMP_DIR/update.tar.gz" "$LATEST_RELEASE_URL"
 echo -e "${CYAN}[Update] Extracting update...${NC}"
 tar -xzf "$TMP_DIR/update.tar.gz" -C "$TMP_DIR"
 
-# The tarball extracts a folder named ChessyNotCheesy-Release. We need to copy its contents into the current directory.
-EXTRACTED_DIR="$TMP_DIR/ChessyNotCheesy-Release"
+# The tarball extracts a folder named ChessyNotCheesy. We need to copy its contents into the current directory.
+EXTRACTED_DIR="$TMP_DIR/ChessyNotCheesy"
 if [ ! -d "$EXTRACTED_DIR" ]; then
     echo -e "${RED}[Update] Failed to locate extracted directory. Release format might have changed.${NC}"
     rm -rf "$TMP_DIR"

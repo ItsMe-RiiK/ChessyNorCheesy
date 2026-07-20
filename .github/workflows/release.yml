@@ -31,11 +31,12 @@ jobs:
 
       - name: Package Release
         run: |
-          mkdir -p ChessyNotCheesy-Release
-          cp -r release/ChessyNotCheesy images themes scripts launcher.sh README.md ChessyNotCheesy-Release/
-          cp scripts/install.sh scripts/uninstall.sh scripts/update.sh ChessyNotCheesy-Release/
-          rm -f ChessyNotCheesy-Release/scripts/install.sh ChessyNotCheesy-Release/scripts/uninstall.sh ChessyNotCheesy-Release/scripts/update.sh
-          tar -czvf ChessyNotCheesy-linux-x86_64.tar.gz ChessyNotCheesy-Release
+          mkdir -p ChessyNotCheesy_build_tmp
+          cp -r release/ChessyNotCheesy images themes scripts launcher.sh README.md ChessyNotCheesy_build_tmp/
+          cp scripts/install.sh scripts/uninstall.sh scripts/update.sh ChessyNotCheesy_build_tmp/
+          rm -f ChessyNotCheesy_build_tmp/scripts/install.sh ChessyNotCheesy_build_tmp/scripts/uninstall.sh ChessyNotCheesy_build_tmp/scripts/update.sh
+          mv ChessyNotCheesy_build_tmp ChessyNotCheesy
+          tar -czvf ChessyNotCheesy-linux-x86_64.tar.gz ChessyNotCheesy
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v1

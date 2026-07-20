@@ -75,7 +75,7 @@ Whenever a new version is released, an automated GitHub Action compiles it and p
 2. Extract the archive.
 3. Run the installer script to set up dependencies, udev permissions (so the bot doesn't need `sudo`), and create a Desktop shortcut:
 ```bash
-cd ChessyNotCheesy-Release
+cd ChessyNotCheesy
 ./install.sh
 ```
 4. You can now launch **ChessyNotCheesy** purely from your Desktop application menu like a standard GUI app!
