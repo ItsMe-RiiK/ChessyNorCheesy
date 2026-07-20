@@ -1,5 +1,5 @@
-#ifndef ChessyNotCheesy_GUI_H
-#define ChessyNotCheesy_GUI_H
+#ifndef CHESSY_NOT_CHEESY_GUI_H
+#define CHESSY_NOT_CHEESY_GUI_H
 
 #include "../bot/bot_controller.h"
 
@@ -7,4 +7,4 @@
 
 int run_gui(int argc, char **argv, BotController &bot, std::atomic<bool> &bot_active);
 
-#endif /* ChessyNotCheesy_GUI_H */
+#endif /* CHESSY_NOT_CHEESY_GUI_H */

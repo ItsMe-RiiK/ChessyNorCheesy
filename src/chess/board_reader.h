@@ -1,5 +1,5 @@
-#ifndef ChessyNotCheesy_BOARD_READER_H
-#define ChessyNotCheesy_BOARD_READER_H
+#ifndef CHESSY_NOT_CHEESY_BOARD_READER_H
+#define CHESSY_NOT_CHEESY_BOARD_READER_H
 
 #include "../capture/screen_capture.h"
 #include "../capture/theme_manager.h"

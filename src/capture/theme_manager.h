@@ -1,5 +1,5 @@
-#ifndef ChessyNotCheesy_THEME_MANAGER_H
-#define ChessyNotCheesy_THEME_MANAGER_H
+#ifndef CHESSY_NOT_CHEESY_THEME_MANAGER_H
+#define CHESSY_NOT_CHEESY_THEME_MANAGER_H
 
 #include <map>
 #include <opencv2/opencv.hpp>
@@ -56,4 +56,4 @@ private:
   std::vector<std::string> scan_directory(const std::string &path) const;
 };
 
-#endif // ChessyNotCheesy_THEME_MANAGER_H
+#endif // CHESSY_NOT_CHEESY_THEME_MANAGER_H

@@ -1,5 +1,5 @@
-#ifndef ChessyNotCheesy_GAME_STATE_H
-#define ChessyNotCheesy_GAME_STATE_H
+#ifndef CHESSY_NOT_CHEESY_GAME_STATE_H
+#define CHESSY_NOT_CHEESY_GAME_STATE_H
 
 #include "board_reader.h"
 
@@ -95,4 +95,4 @@ private:
   static bool uci_to_square(const std::string &uci, int &file, int &rank);
 };
 
-#endif /* ChessyNotCheesy_GAME_STATE_H */
+#endif /* CHESSY_NOT_CHEESY_GAME_STATE_H */

@@ -1,5 +1,5 @@
-#ifndef ChessyNotCheesy_SCREEN_CAPTURE_H
-#define ChessyNotCheesy_SCREEN_CAPTURE_H
+#ifndef CHESSY_NOT_CHEESY_SCREEN_CAPTURE_H
+#define CHESSY_NOT_CHEESY_SCREEN_CAPTURE_H
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -77,4 +77,4 @@ private:
   bool alloc_shm(int width, int height);
 };
 
-#endif /* ChessyNotCheesy_SCREEN_CAPTURE_H */
+#endif /* CHESSY_NOT_CHEESY_SCREEN_CAPTURE_H */
