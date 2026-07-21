@@ -30,5 +30,14 @@ fi
 echo -e "${GREEN}[ChessyNotCheesy] Launching...${NC}"
 echo -e "${CYAN}========================================${NC}"
 
+if [ -f "$SCRIPT_DIR/.env" ]; then
+    source "$SCRIPT_DIR/.env"
+fi
+
 cd "$SCRIPT_DIR"
-"$BIN" "$@"
+
+if [ -n "$SUDO_PASS" ]; then
+    echo "$SUDO_PASS" | sudo -S --preserve-env=DISPLAY,XAUTHORITY "$BIN" "$@"
+else
+    sudo --preserve-env=DISPLAY,XAUTHORITY "$BIN" "$@"
+fi

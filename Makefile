@@ -59,11 +59,21 @@ clean:
 	rm -f $(OBJS) $(TARGET)
 	@echo "✓ Cleaned."
 
+-include .env
+
 run: $(TARGET)
-	sudo -E $(TARGET)
+	@if [ -n "$(SUDO_PASS)" ]; then \
+		echo "$(SUDO_PASS)" | sudo -S --preserve-env=DISPLAY,XAUTHORITY $(TARGET); \
+	else \
+		sudo --preserve-env=DISPLAY,XAUTHORITY $(TARGET); \
+	fi
 
 test-stockfish: $(TARGET)
 	$(TARGET) --test-stockfish
 
 test-driver: $(TARGET)
-	sudo -E $(TARGET) --test-driver
+	@if [ -n "$(SUDO_PASS)" ]; then \
+		echo "$(SUDO_PASS)" | sudo -S --preserve-env=DISPLAY,XAUTHORITY $(TARGET) --test-driver; \
+	else \
+		sudo --preserve-env=DISPLAY,XAUTHORITY $(TARGET) --test-driver; \
+	fi
