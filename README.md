@@ -78,7 +78,7 @@ Whenever a new version is released, an automated GitHub Action compiles it and p
 cd ChessyNotCheesy
 ./install.sh
 ```
-4. You can now launch **ChessyNotCheesy** purely from your Desktop application menu like a standard GUI app!
+4. You can now launch **ChessyNotCheesy** from your Desktop application menu
 </details>
 
 <details>
@@ -93,7 +93,7 @@ cd ChessyNotCheesy
 ```bash
 cp .env.example .env
 ```
-*Edit `.env` and configure your `SUDO_PASS`. This file is ignored by Git and remains strictly local.*
+*Edit `.env` and configure your `SUDO_PASS`.
 
 3. Run the installer to setup dependencies and udev permissions:
 ```bash
@@ -122,7 +122,7 @@ We provide convenient scripts to manage your installation (bundled in the root f
 
 1. **Setup Chess.com**: 
    - Open a game on Chess.com.
-   - **Important:** Set your piece style to **Neo** and board style to **Wood**. If you prefer other styles, you must update the templates in `themes/pieces/neo` and adjust the [Default Config](themes/default.cfg).
+   - **Important:** Set your piece style to **Neo** and board style to **Wood**. If you prefer other styles, you must update the templates in `themes/pieces/(add new themes folder for pieces here or board in board folder)` and adjust the [Default Config](themes/default.cfg).
    - Set move method to **Drag or Click**.
    - Set piece animation to **Slow** or **Medium** (Default).
    - Ensure the entire board is visible on your primary monitor without obstruction.
