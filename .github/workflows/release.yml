@@ -22,17 +22,18 @@ jobs:
       - name: Install System Dependencies
         run: |
           pacman -Syu --noconfirm
-          pacman -S --noconfirm base-devel git gtk3 opencv qt6-base libxtst
+          pacman -S --noconfirm base-devel git gtk3 opencv qt6-base libxtst curl tar
 
       - name: Build Project
         run: |
           make clean
           make
+          make setup-stockfish
 
       - name: Package Release
         run: |
           mkdir -p ChessyNotCheesy_build_tmp
-          cp -r release/ChessyNotCheesy images themes scripts launcher.sh README.md ChessyNotCheesy_build_tmp/
+          cp -r release/ChessyNotCheesy images themes scripts bin launcher.sh README.md ChessyNotCheesy_build_tmp/
           cp scripts/install.sh scripts/uninstall.sh scripts/update.sh ChessyNotCheesy_build_tmp/
           rm -f ChessyNotCheesy_build_tmp/scripts/install.sh ChessyNotCheesy_build_tmp/scripts/uninstall.sh ChessyNotCheesy_build_tmp/scripts/update.sh
           mv ChessyNotCheesy_build_tmp ChessyNotCheesy
