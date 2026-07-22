@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <poll.h>
 #include <signal.h>
+#include <future>
 #include <sstream>
 #include <sys/wait.h>
 #include <thread>
@@ -23,6 +24,14 @@ bool StockfishEngine::start(const std::string& path)
 {
     if (child_pid_ > 0)
         return true;  // Already running
+
+    std::string actual_path = path;
+    if (path == "stockfish" && access("bin/stockfish", X_OK) == 0)
+    {
+        actual_path = "bin/stockfish";
+    }
+
+    engine_path_ = actual_path;
 
     int to_engine[2];    // parent writes → child reads (stdin)
     int from_engine[2];  // child writes → parent reads (stdout)
@@ -62,7 +71,7 @@ bool StockfishEngine::start(const std::string& path)
         close(to_engine[0]);
         close(from_engine[1]);
 
-        execlp("nice", "nice", "-n", "19", path.c_str(), nullptr);
+        execlp("nice", "nice", "-n", "19", actual_path.c_str(), nullptr);
 
         // If execlp returns, it failed
         perror("[Stockfish] execlp failed");
@@ -156,14 +165,19 @@ bool StockfishEngine::send_command(const std::string& cmd)
                 fprintf(stderr, " (exit code: %d)", WEXITSTATUS(status));
             else if (result > 0 && WIFSIGNALED(status))
                 fprintf(stderr, " (killed by signal: %d)", WTERMSIG(status));
-            fprintf(stderr, "\n");
+            fprintf(stderr, ". Attempting restart...\n");
 
             child_pid_ = -1;
             close(to_engine_fd_);
             to_engine_fd_ = -1;
             close(from_engine_fd_);
             from_engine_fd_ = -1;
-            return false;
+            
+            if (!start(engine_path_))
+            {
+                fprintf(stderr, "[Stockfish] Failed to restart engine.\n");
+                return false;
+            }
         }
     }
 
@@ -269,6 +283,13 @@ bool StockfishEngine::set_position(const std::string& fen)
     send_command("isready");
     wait_for("readyok", 5000);
     return true;
+}
+
+std::future<std::string> StockfishEngine::get_best_move_async(int depth)
+{
+    return std::async(std::launch::async, [this, depth]() {
+        return this->get_best_move(depth);
+    });
 }
 
 std::string StockfishEngine::get_best_move(int depth)

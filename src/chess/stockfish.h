@@ -1,6 +1,7 @@
 #ifndef CHESSY_NOT_CHEESY_STOCKFISH_H
 #define CHESSY_NOT_CHEESY_STOCKFISH_H
 
+#include <future>
 #include <string>
 
 /*
@@ -27,9 +28,12 @@ class StockfishEngine
     // Set position from FEN string
     bool set_position(const std::string& fen);
 
-    // Get best move at given depth
+    // Get best move at given depth (blocking)
     // Returns move in UCI format (e.g., "e2e4", "e7e8q" for promotion)
     std::string get_best_move(int depth = 20);
+
+    // Get best move at given depth asynchronously (non-blocking)
+    std::future<std::string> get_best_move_async(int depth = 20);
 
     // Configure engine options
     bool set_option(const std::string& name, const std::string& value);
@@ -51,6 +55,7 @@ class StockfishEngine
     int   from_engine_fd_;  // pipe: read from Stockfish's stdout
 
     std::string engine_info_;
+    std::string engine_path_;
     int         last_score_;
     std::string last_pv_;
 
