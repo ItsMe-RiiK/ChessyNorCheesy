@@ -37,11 +37,13 @@ THREAD_LIBS := -pthread
 ALL_CFLAGS := $(CXXFLAGS) $(GTK_CFLAGS) $(OPENCV_CFLAGS)
 ALL_LIBS := $(GTK_LIBS) $(X11_LIBS) $(OPENCV_LIBS) $(THREAD_LIBS)
 
-# ── Targets ──
-
-.PHONY: all clean run test-stockfish test-driver
+.PHONY: all clean run test-stockfish test-driver setup-stockfish
 
 all: $(TARGET)
+
+setup-stockfish:
+	@echo "Running Stockfish setup script..."
+	@./scripts/setup_stockfish.sh
 
 $(TARGET): $(OBJS)
 	@mkdir -p $(RELEASE_DIR)
