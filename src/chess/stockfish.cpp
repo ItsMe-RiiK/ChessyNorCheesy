@@ -7,6 +7,7 @@
 #include <future>
 #include <sstream>
 #include <sys/wait.h>
+#include <sys/prctl.h>
 #include <thread>
 #include <unistd.h>
 
@@ -61,6 +62,9 @@ bool StockfishEngine::start(const std::string& path)
     if (child_pid_ == 0)
     {
         // Child process — become Stockfish
+        // Ask kernel to deliver SIGTERM if parent dies
+        prctl(PR_SET_PDEATHSIG, SIGTERM);
+
         close(to_engine[1]);    // Close write end of stdin pipe
         close(from_engine[0]);  // Close read end of stdout pipe
 
