@@ -1,4 +1,4 @@
-AccessModifierOffset: -1
+AccessModifierOffset: -2
 AlignAfterOpenBracket: BlockIndent
 AlignConsecutiveAssignments: Consecutive
 AlignConsecutiveDeclarations: Consecutive
@@ -20,9 +20,10 @@ BraceWrapping:
   AfterFunction: true
   AfterClass: true
   AfterStruct: true
-  AfterControlStatement: true
+  AfterControlStatement: false
   BeforeElse: true
-  AfterEnum: true
+  AfterEnum: false
+  AfterNamespace: false
 
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: AfterColon
@@ -31,17 +32,18 @@ BreakStringLiterals: false
 ColumnLimit: 100
 ContinuationIndentWidth: 2
 Cpp11BracedListStyle: true
+CompactNamespaces: true
 
 FixNamespaceComments: true
 
 IncludeBlocks: Regroup
 IndentGotoLabels: false
 IndentPPDirectives: BeforeHash
-IndentWidth: 4
+IndentWidth: 2
 
 MaxEmptyLinesToKeep: 2
 
-NamespaceIndentation: None
+NamespaceIndentation: All
 
 PackConstructorInitializers: Never
 
